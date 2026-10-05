@@ -1,0 +1,16 @@
+---
+import { site } from '../config/site';
+interface Props {
+  class?: string;
+}
+const { class: cls = '' } = Astro.props;
+---
+
+{
+  site.mode === 'demo' && (
+    <span class:list={['label inline-flex items-center gap-1.5 rounded-full border border-current/25 px-2.5 py-1 opacity-75', cls]} title="Sample content for the demo">
+      <span class="size-1 rounded-full bg-current" />
+      Sample
+    </span>
+  )
+}

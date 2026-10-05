@@ -1,0 +1,721 @@
+---
+import Layout from '../../v3/Layout.astro';
+import { site } from '../../config/site';
+import { profile, highlights } from '../../data/profile';
+import { photos, homePhotos, videos } from '../../data/media';
+import { soldHomes, soldStats } from '../../data/sold';
+import { posts, videoList, awards, career } from '../../data/content';
+import { unsplash, srcset, money, compactMoney, monthYear, longDate } from '../../lib/img';
+
+const demo = site.mode === 'demo';
+const tel = site.phone.value.replace(/[^\d+]/g, '');
+const DRE_LOOKUP = 'https://www2.dre.ca.gov/publicasp/pplinfo.asp';
+
+// Sales per year for the little bar chart.
+const years = [...new Set(soldHomes.map((h) => h.closeDate.slice(0, 4)))].sort();
+const perYear = years.map((y) => soldHomes.filter((h) => h.closeDate.startsWith(y)).length);
+const maxYear = Math.max(...perYear);
+
+const cityCounts = Object.entries(
+  soldHomes.reduce<Record<string, number>>((acc, h) => ((acc[h.city] = (acc[h.city] ?? 0) + 1), acc), {}),
+).sort((a, b) => b[1] - a[1]);
+
+const tabs = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'sold', label: 'Sold homes', count: soldStats.count },
+  { id: 'reviews', label: 'Reviews' },
+  { id: 'experience', label: 'Experience' },
+  { id: 'videos', label: 'Videos' },
+  { id: 'posts', label: 'Posts' },
+];
+
+const overLabel = (sold: number, list: number) => {
+  const d = (sold / list - 1) * 100;
+  return Math.abs(d) < 0.05 ? 'At list price' : `${d > 0 ? '+' : '−'}${Math.abs(d).toFixed(1)}% ${d > 0 ? 'over' : 'under'} list`;
+};
+
+// Data for the client script (drawer, stories, vCard, QR).
+const data = {
+  contact: {
+    name: site.name.value,
+    first: site.firstName,
+    last: site.lastName,
+    role: site.role,
+    phone: site.phone.value,
+    tel,
+    email: site.email.value,
+    dre: site.dre.value,
+    brokerage: site.brokerage.value,
+    area: site.area,
+  },
+  highlights: highlights.map((h) => ({
+    label: h.label,
+    slides: h.slides.map((s) => ({ img: unsplash(s.img, 1080, 16 / 9), title: s.title, sub: s.sub ?? '' })),
+  })),
+  homes: Object.fromEntries(
+    soldHomes.map((h) => [
+      h.id,
+      {
+        img: unsplash(h.photo, 1200, 0.72),
+        place: `${h.neighborhood}, ${h.city}`,
+        area: h.city,
+        type: h.type,
+        beds: h.beds,
+        baths: h.baths,
+        sqft: h.sqft.toLocaleString('en-US'),
+        list: money(h.listPrice),
+        sold: money(h.soldPrice),
+        over: overLabel(h.soldPrice, h.listPrice),
+        closed: longDate(h.closeDate),
+        sample: h.sample,
+      },
+    ]),
+  ),
+  posts: Object.fromEntries(
+    posts.map((p) => [
+      p.slug,
+      { title: p.title, tag: p.tag, date: longDate(p.date), minutes: p.minutes, cover: unsplash(p.cover, 1400, 0.56), body: p.body, sample: p.sample },
+    ]),
+  ),
+  cities: cityCounts.map(([c]) => c).slice(0, 4),
+};
+
+const mapHomes = soldHomes.map((h) => ({
+  id: h.id,
+  lat: h.lat,
+  lng: h.lng,
+  city: h.city,
+  price: money(h.soldPrice),
+  place: `${h.neighborhood}, ${h.city}`,
+  meta: `${h.beds} bd · ${h.baths} ba · ${monthYear(h.closeDate)}`,
+}));
+
+const PAGE = 12;
+---
+
+<Layout title="Profile" description="Thang Truong — real estate agent in San Jose and the Bay Area. Sold homes, reviews, experience and a direct line to Thang.">
+  <!-- ============================================================ COVER -->
+  <section class="mx-auto max-w-[1280px] pt-16 md:px-6 md:pt-20">
+    <div data-cover class="relative h-[230px] overflow-hidden bg-night sm:h-[300px] md:h-[400px] md:rounded-xl">
+      <video data-cover-video class="absolute inset-0 size-full scale-110 object-cover" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+        <source media="(min-width: 900px)" src={videos.hero.hd} type="video/mp4" />
+        <source src={videos.hero.sd} type="video/mp4" />
+      </video>
+      <div class="absolute inset-0 bg-gradient-to-t from-night/75 via-night/5 to-night/25"></div>
+      <p class="absolute top-4 left-4 flex items-center gap-2 rounded-full bg-night/40 px-3 py-1.5 text-xs font-semibold text-porcelain backdrop-blur-md">
+        <svg class="size-3.5 text-gold" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 18s6-5.2 6-10a6 6 0 1 0-12 0c0 4.8 6 10 6 10z"></path><circle cx="10" cy="8" r="2"></circle></svg>
+        San Jose, California
+      </p>
+      {demo && <p class="label absolute right-4 bottom-4 hidden text-porcelain/70 md:block">Cover film · sample</p>}
+    </div>
+  </section>
+
+  <!-- ============================================================ IDENTITY -->
+  <section class="mx-auto max-w-[1280px] px-4 md:px-6" aria-labelledby="profile-name">
+    <div class="relative flex flex-col items-center gap-5 text-center lg:flex-row lg:items-start lg:gap-8 lg:px-8 lg:text-left">
+      <div data-avatar class="relative -mt-20 size-36 shrink-0 md:size-44 lg:-mt-24">
+        <div class="ring-gold absolute inset-0 animate-ring rounded-full"></div>
+        <div class="absolute inset-[3px] rounded-full bg-porcelain p-[5px]">
+          <div class="grid size-full place-items-center overflow-hidden rounded-full bg-night">
+            <span class="foil font-display text-5xl md:text-6xl">{site.initials}</span>
+          </div>
+        </div>
+        <span class="absolute right-3 bottom-3 size-5 animate-pulse-dot rounded-full border-4 border-porcelain bg-success md:right-4 md:bottom-4" title={profile.availability.value}></span>
+        <span class="sr-only">Portrait placeholder</span>
+      </div>
+
+      <div class="min-w-0 flex-1 lg:pt-5">
+        <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 lg:justify-start">
+          <h1 id="profile-name" data-split class="font-display text-name font-normal">{site.name.value}</h1>
+          <a href={DRE_LOOKUP} target="_blank" rel="noopener" data-pre-hide data-intro class="group inline-flex items-center gap-1.5 rounded-full bg-night py-1.5 pr-3 pl-2 text-xs font-bold text-gold" title="Verify this license on the California DRE website">
+            <svg class="size-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.1 1.6 2.6-.2.9 2.5 2.3 1.2-.6 2.6 1.2 2.3-1.9 1.8-.3 2.6-2.6.5-1.6 2.1-2.4-1-2.4 1-1.6-2.1-2.6-.5-.3-2.6L1.5 13l1.2-2.3-.6-2.6 2.3-1.2.9-2.5 2.6.2z"></path><path d="m6.8 10.2 2.2 2.2 4.3-4.6" stroke="#0c1626" stroke-width="1.8" fill="none"></path></svg>
+            DRE Licensed
+            <span class="text-gold/60 transition-transform group-hover:translate-x-0.5">↗</span>
+          </a>
+        </div>
+        <p data-pre-hide data-intro class="mt-2 text-lg text-slate">{site.role} · {site.area}</p>
+        <ul data-pre-hide data-intro class="mt-4 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-slate lg:justify-start">
+          <li class="flex items-center gap-1.5"><svg class="size-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 18s6-5.2 6-10a6 6 0 1 0-12 0c0 4.8 6 10 6 10z"></path><circle cx="10" cy="8" r="2"></circle></svg>San Jose, CA</li>
+          <li class="flex items-center gap-1.5"><svg class="size-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.5"></circle><path d="M2.5 10h15M10 2.5c2 2.2 3 4.7 3 7.5s-1 5.3-3 7.5c-2-2.2-3-4.7-3-7.5s1-5.3 3-7.5z"></path></svg>{profile.languages.value.join(' · ')}</li>
+          <li class="flex items-center gap-1.5"><svg class="size-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17V7l7-4 7 4v10"></path><path d="M8 17v-5h4v5"></path></svg>{site.brokerage.value}</li>
+          <li class="flex items-center gap-1.5 font-semibold text-success"><span class="size-2 rounded-full bg-success"></span>{profile.availability.value}</li>
+        </ul>
+        <div data-pre-hide data-intro class="mt-6 flex flex-wrap justify-center gap-2 lg:justify-start">
+          <button type="button" data-chat-open class="btn btn-primary">
+            <svg class="size-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3.5 15.5 4.6 12A6.5 6.5 0 1 1 8 15.4z"></path></svg>
+            Message
+          </button>
+          <a href={`tel:${tel}`} class="btn btn-ghost">
+            <svg class="size-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 3h3l1.5 4-2 1.2a9 9 0 0 0 5.3 5.3l1.2-2 4 1.5v3a1.5 1.5 0 0 1-1.6 1.5A14 14 0 0 1 2.5 4.6 1.5 1.5 0 0 1 4 3z"></path></svg>
+            Call
+          </a>
+          <button type="button" data-chat-open data-chat-intent="Book a consultation" class="btn btn-gold">Book a consultation</button>
+          <div class="relative">
+            <button type="button" data-more-btn aria-expanded="false" aria-haspopup="menu" class="btn btn-ghost px-3.5!" aria-label="More options">
+              <svg class="size-4" viewBox="0 0 20 20" fill="currentColor"><circle cx="4.5" cy="10" r="1.6"></circle><circle cx="10" cy="10" r="1.6"></circle><circle cx="15.5" cy="10" r="1.6"></circle></svg>
+            </button>
+            <div data-more-menu role="menu" class="card absolute right-0 z-20 mt-2 hidden w-56 p-1.5 text-left">
+              <button type="button" role="menuitem" data-vcard class="menu-item">Save contact (vCard)</button>
+              <button type="button" role="menuitem" data-share class="menu-item">Share profile</button>
+              <button type="button" role="menuitem" data-qr-open class="menu-item">Show QR code</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Stats -->
+    <dl data-pre-hide data-intro class="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-ink/8 bg-ink/8 md:grid-cols-4">
+      <div class="bg-card px-5 py-4"><dd class="font-display text-3xl" data-count-up={String(soldStats.count)}>{soldStats.count}</dd><dt class="mt-0.5 text-sm text-slate">Homes sold</dt></div>
+      <div class="bg-card px-5 py-4"><dd class="font-display text-3xl" data-count-up={compactMoney(soldStats.volume)}>{compactMoney(soldStats.volume)}</dd><dt class="mt-0.5 text-sm text-slate">Sales volume</dt></div>
+      <div class="bg-card px-5 py-4"><dd class="font-display text-3xl" data-count-up={`+${soldStats.avgOverList}%`}>+{soldStats.avgOverList}%</dd><dt class="mt-0.5 text-sm text-slate">Average over list</dt></div>
+      <div class="bg-card px-5 py-4"><dd class="font-display text-3xl" data-count-up={String(soldStats.cities)}>{soldStats.cities}</dd><dt class="mt-0.5 flex items-center justify-between text-sm text-slate">Cities served {demo && <span class="label text-gold-deep">Sample</span>}</dt></div>
+    </dl>
+
+    <!-- Highlights -->
+    <div class="mt-8 flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] md:gap-6" data-highlights>
+      {
+        highlights.map((h, i) => (
+          <button type="button" data-highlight={i} class="hl group flex w-[78px] shrink-0 flex-col items-center gap-2">
+            <span class="hl-ring ring-gold relative block size-[74px] rounded-full p-[2.5px] transition-transform duration-500 ease-out-back group-hover:scale-105">
+              <img src={unsplash(h.cover, 200, 1)} alt="" class="size-full rounded-full border-[3px] border-porcelain object-cover" loading="lazy" />
+            </span>
+            <span class="w-full truncate text-center text-xs font-semibold">{h.label}</span>
+          </button>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- ============================================================ TABS -->
+  <div data-tabs class="sticky top-16 z-30 mt-6 border-b border-ink/8 bg-porcelain/85 backdrop-blur-xl">
+    <nav class="relative mx-auto flex max-w-[1280px] gap-1 overflow-x-auto px-4 [scrollbar-width:none] md:px-6" aria-label="Profile sections">
+      {
+        tabs.map((t, i) => (
+          <a href={`#${t.id}`} data-tab={t.id} class:list={['tab', i === 0 && 'is-active']}>
+            {t.label}
+            {t.count && <span class="tab-count">{t.count}</span>}
+          </a>
+        ))
+      }
+      <span data-tab-indicator class="tab-indicator" aria-hidden="true"></span>
+    </nav>
+  </div>
+
+  <!-- ============================================================ OVERVIEW (bento) -->
+  <section id="overview" class="mx-auto max-w-[1280px] scroll-mt-32 px-4 pt-8 md:px-6 md:pt-10" aria-label="Overview">
+    <div data-bento class="grid grid-flow-row-dense grid-cols-2 gap-3 md:auto-rows-[200px] md:grid-cols-4 md:gap-4">
+      <!-- Business card -->
+      <div class="card col-span-2 flex flex-col overflow-hidden bg-night p-5 text-porcelain md:row-span-2 md:p-6" data-spot>
+        <div class="flex items-center justify-between">
+          <p class="label text-gold">Digital business card</p>
+          <p class="text-xs text-slate-light">Tap to flip</p>
+        </div>
+        <div class="grid flex-1 place-items-center py-6">
+          <button type="button" data-bizcard class="bizcard aspect-[1.586] w-full max-w-[360px]" aria-label="Flip the business card">
+            <span class="bizcard-inner block size-full">
+              <span class="bizcard-face bizcard-front flex flex-col justify-between p-5 text-left md:p-6">
+                <span class="relative z-10 flex items-start justify-between">
+                  <span class="foil font-display text-3xl leading-none">{site.initials}</span>
+                  <span class="label text-slate-light">San Jose · CA</span>
+                </span>
+                <span class="relative z-10">
+                  <span class="block font-display text-[1.65rem] leading-none tracking-tight">{site.name.value}</span>
+                  <span class="label mt-2 block text-slate-light">{site.role}</span>
+                </span>
+                <span class="relative z-10 flex items-end justify-between">
+                  <span class="text-[10px] font-semibold tracking-[0.18em] text-slate-light">{site.dre.value}</span>
+                  <span data-card-qr class="block size-12 rounded-sm bg-white p-1"></span>
+                </span>
+              </span>
+              <span class="bizcard-face bizcard-back flex flex-col justify-between p-5 text-left md:p-6">
+                <span class="relative z-10 label text-gold">Direct line</span>
+                <span class="relative z-10 space-y-1.5 text-sm">
+                  <span class="block font-display text-2xl">{site.phone.value}</span>
+                  <span class="block text-slate-light">{site.email.value}</span>
+                </span>
+                <span class="relative z-10 text-[10px] font-semibold tracking-[0.18em] text-slate-light uppercase">{site.brokerage.value} · Equal Housing Opportunity</span>
+              </span>
+            </span>
+          </button>
+        </div>
+        <div class="flex flex-wrap justify-center gap-2">
+          <button type="button" data-vcard class="btn btn-gold">Save to contacts</button>
+          <button type="button" data-qr-open class="btn border border-porcelain/20 hover:border-porcelain/60">QR code</button>
+        </div>
+      </div>
+
+      <!-- Homes sold + bars -->
+      <div class="card flex min-h-[170px] flex-col justify-between p-5" data-spot>
+        <p class="label text-slate">Homes sold</p>
+        <p class="font-display text-big" data-count-up={String(soldStats.count)}>{soldStats.count}</p>
+        <div>
+          <svg data-bars viewBox={`0 0 ${perYear.length * 20} 40`} class="h-10 w-full" preserveAspectRatio="none" aria-hidden="true">
+            {perYear.map((n, i) => <rect class="bar" x={i * 20 + 3} y={40 - (n / maxYear) * 38} width="14" height={(n / maxYear) * 38} rx="2" />)}
+          </svg>
+          <p class="mt-1 flex justify-between text-[11px] text-slate"><span>{years[0]}</span><span>{years.at(-1)}</span></p>
+        </div>
+      </div>
+
+      <!-- Latest short (video) -->
+      <a href={site.youtube.value} target="_blank" rel="noopener" class="card group row-span-2 overflow-hidden bg-night text-porcelain" aria-label="Watch Thang's latest short on YouTube">
+        <video class="absolute inset-0 size-full object-cover opacity-90 transition-transform duration-1000 ease-out-expo group-hover:scale-105" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+          <source src={videos.aerial.sd} type="video/mp4" />
+        </video>
+        <span class="absolute inset-0 bg-gradient-to-t from-night/90 via-transparent to-night/30"></span>
+        <span class="absolute top-4 left-4 flex items-center gap-2 text-xs font-bold"><span class="size-2 animate-pulse rounded-full bg-gold"></span>Latest short</span>
+        <span class="absolute top-3 right-3 grid size-10 place-items-center rounded-full bg-porcelain/15 backdrop-blur transition group-hover:bg-gold group-hover:text-night">
+          <svg class="ml-0.5 size-3.5" viewBox="0 0 12 12" fill="currentColor"><path d="M3 1.5v9l7.5-4.5z"></path></svg>
+        </span>
+        <span class="absolute inset-x-4 bottom-4">
+          <span class="block font-display text-2xl leading-tight">{videoList[0].title}</span>
+          <span class="mt-1 block text-xs text-slate-light">YouTube Shorts {demo && '· sample'}</span>
+        </span>
+      </a>
+
+      <!-- Volume -->
+      <div class="card flex min-h-[170px] flex-col justify-between p-5" data-spot>
+        <p class="label text-slate">Sales volume</p>
+        <p class="font-display text-big" data-count-up={compactMoney(soldStats.volume)}>{compactMoney(soldStats.volume)}</p>
+        <p class="text-sm"><span class="font-bold text-success">+{soldStats.avgOverList}%</span> <span class="text-slate">average over list</span></p>
+      </div>
+
+      <!-- Map -->
+      <div class="card col-span-2 h-[280px] overflow-hidden md:h-auto">
+        <p class="label absolute inset-0 grid place-items-center text-slate">Loading map…</p>
+        <div data-map class="size-full"></div>
+        <div class="pointer-events-none absolute top-3 left-3 rounded-full bg-card/90 px-3 py-1.5 text-xs font-bold shadow-card backdrop-blur">
+          {soldStats.count} homes · {soldStats.cities} cities {demo && <span class="ml-1 text-gold-deep">· sample pins</span>}
+        </div>
+        <a href="#sold" data-tab-link class="absolute top-3 right-3 rounded-full bg-night px-3.5 py-2 text-xs font-bold text-porcelain">See all sales</a>
+      </div>
+
+      <!-- Awards rotator -->
+      <div class="card min-h-[200px] overflow-hidden bg-night text-porcelain" data-awards-rotator>
+        {
+          awards.map((a, i) => (
+            <img src={unsplash(a.photo!, 600, 1)} alt="" loading="lazy" data-rot={i} data-year={a.year} data-title={a.title} class:list={['rot-img absolute inset-0 size-full object-cover', i === 0 && 'is-on']} />
+          ))
+        }
+        <span class="absolute inset-0 bg-gradient-to-t from-night/90 via-night/10 to-transparent"></span>
+        <span class="label absolute top-4 left-4 text-gold">Awards · {awards.length}</span>
+        <span class="absolute inset-x-4 bottom-4 flex items-end justify-between gap-2">
+          <span class="text-sm font-semibold" data-rot-title>{awards[0].title}</span>
+          <span class="font-display text-3xl leading-none" data-rot-year>{awards[0].year}</span>
+        </span>
+      </div>
+
+      <!-- Trust -->
+      <div class="card flex min-h-[200px] flex-col justify-between p-5" data-spot>
+        <svg class="size-9 text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 2.5 4 6v5.5c0 4.8 3.4 8.6 8 10 4.6-1.4 8-5.2 8-10V6z"></path><path d="m8.5 12 2.5 2.5 4.5-5"></path></svg>
+        <div>
+          <p class="font-display text-xl leading-tight">Licensed in California</p>
+          <p class="mt-1 text-sm text-slate">{site.dre.value}</p>
+        </div>
+        <a href={DRE_LOOKUP} target="_blank" rel="noopener" class="text-sm font-bold underline decoration-gold underline-offset-4">Verify on DRE ↗</a>
+      </div>
+
+      <!-- About -->
+      <div class="card col-span-2 flex flex-col justify-between gap-5 p-6" data-spot>
+        <div class="flex items-center justify-between">
+          <p class="label text-slate">About</p>
+          {demo && <span class="label text-gold-deep">Sample</span>}
+        </div>
+        <p class="font-display text-xl leading-snug md:text-2xl">{profile.bio.value}</p>
+        <div class="flex flex-wrap items-center gap-2">
+          {profile.languages.value.map((l) => <span class="chip">{l}</span>)}
+          <a href="#experience" data-tab-link class="ml-auto text-sm font-bold">Experience →</a>
+        </div>
+      </div>
+
+      <!-- Book -->
+      <div class="card col-span-2 flex flex-col p-4 md:col-span-1" data-book>
+        <p class="label text-slate">Book a consultation</p>
+        <div data-book-days class="mt-3 grid grid-cols-5 gap-1.5"></div>
+        <div data-book-times class="mt-2 grid grid-cols-3 gap-1.5">
+          {['10:00 AM', '1:00 PM', '4:00 PM'].map((t, i) => <button type="button" class="slot" aria-pressed={i === 1 ? 'true' : 'false'}>{t}</button>)}
+        </div>
+        <button type="button" data-book-go class="btn btn-primary mt-auto w-full py-2.5!">Request this time</button>
+      </div>
+
+      <!-- Home value -->
+      <button type="button" data-chat-open data-chat-intent="Home value estimate" class="card group col-span-2 min-h-[180px] overflow-hidden bg-night p-5 text-left text-porcelain md:col-span-1">
+        <img src={unsplash(homePhotos[6], 700, 1)} alt="" loading="lazy" class="absolute inset-0 size-full object-cover opacity-45 transition-transform duration-1000 ease-out-expo group-hover:scale-105" />
+        <span class="absolute inset-0 bg-gradient-to-t from-night via-night/40 to-transparent"></span>
+        <span class="relative flex h-full flex-col justify-between">
+          <span class="label text-gold">Selling?</span>
+          <span>
+            <span class="block font-display text-2xl leading-tight">What’s my home worth?</span>
+            <span class="mt-2 inline-flex items-center gap-1 text-sm font-bold">Ask for an estimate <span class="transition-transform group-hover:translate-x-1">→</span></span>
+          </span>
+        </span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================================ SOLD HOMES -->
+  <section id="sold" class="mx-auto max-w-[1280px] scroll-mt-32 px-4 pt-16 md:px-6 md:pt-20" aria-labelledby="sold-title">
+    <div class="card p-5 md:p-8">
+      <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p class="label flex items-center gap-2 text-slate">Track record {demo && <span class="text-gold-deep">· Sample data</span>}</p>
+          <h2 id="sold-title" data-split class="mt-2 font-display text-title">Sold homes</h2>
+        </div>
+        <p class="max-w-sm text-sm text-slate">Every closing with its list price, sold price and close date. Tap a home for details.</p>
+      </div>
+      <div data-city-chips class="mt-6 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+        <button type="button" class="chip" data-city="" aria-pressed="true">All <span class="opacity-60">{soldStats.count}</span></button>
+        {cityCounts.map(([c, n]) => <button type="button" class="chip" data-city={c} aria-pressed="false">{c} <span class="opacity-60">{n}</span></button>)}
+      </div>
+      <div data-sold-grid class="mt-5 grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
+        {
+          soldHomes.map((h, i) => (
+            <button type="button" data-home-tile={h.id} data-city={h.city} class:list={['group relative aspect-square overflow-hidden rounded-md bg-mist text-left', i >= PAGE && 'hidden']}>
+              <img src={unsplash(h.photo, 600, 1)} srcset={srcset(h.photo, 1, [320, 600, 900])} sizes="(min-width: 1024px) 22vw, (min-width: 768px) 30vw, 46vw" alt={`${h.type} in ${h.neighborhood}, ${h.city}`} loading="lazy" class="size-full object-cover transition-transform duration-1000 ease-out-expo group-hover:scale-105" />
+              <span class="absolute inset-0 bg-gradient-to-t from-night/85 via-night/0 to-night/10 transition-opacity duration-500 group-hover:from-night/95" />
+              <span class="absolute top-2 left-2 rounded-full bg-porcelain/90 px-2 py-0.5 text-[10px] font-bold tracking-wide text-night uppercase">Sold · {monthYear(h.closeDate)}</span>
+              <span class="absolute inset-x-3 bottom-3 text-porcelain">
+                <span class="block font-display text-xl leading-tight md:text-2xl">{money(h.soldPrice)}</span>
+                <span class="block truncate text-xs opacity-80">{h.neighborhood}, {h.city} · {h.beds} bd · {h.baths} ba</span>
+              </span>
+            </button>
+          ))
+        }
+      </div>
+      <div class="mt-6 flex items-center justify-between gap-4">
+        <p data-sold-count class="text-sm text-slate">Showing {PAGE} of {soldStats.count}</p>
+        <button type="button" data-sold-more class="btn btn-ghost">Show more</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ REVIEWS -->
+  <section id="reviews" class="mx-auto max-w-[1280px] scroll-mt-32 px-4 pt-16 md:px-6 md:pt-20" aria-labelledby="reviews-title">
+    <div class="grid gap-3 md:grid-cols-3 md:gap-4">
+      <div class="card flex flex-col p-6 md:row-span-2 md:p-8">
+        <p class="label text-slate">Client reviews</p>
+        <h2 id="reviews-title" data-split class="mt-2 font-display text-title">Reviews</h2>
+        <div class="mt-8 flex items-end gap-3">
+          <p class="font-display text-big leading-none">—</p>
+          <p class="pb-1 text-slate">/ 5</p>
+        </div>
+        <div class="mt-3 flex gap-1 text-mist" aria-hidden="true">
+          {[0, 1, 2, 3, 4].map(() => <svg class="size-5" viewBox="0 0 20 20" fill="currentColor"><path d="m10 1.8 2.5 5.3 5.8.7-4.3 4 1.1 5.7L10 14.7l-5.1 2.8L6 11.8 1.7 7.8l5.8-.7z" /></svg>)}
+        </div>
+        <p class="mt-6 text-sm leading-relaxed text-slate">
+          Live ratings and reviews appear here once Thang’s Zillow and Google profiles are connected. Every review is real and shown with its source. Nothing is written for the site.
+        </p>
+        <div class="mt-auto flex flex-wrap gap-2 pt-8">
+          <span class="chip">Zillow</span><span class="chip">Google</span><span class="chip">Realtor.com</span>
+        </div>
+      </div>
+      {
+        ['Zillow', 'Google', 'Zillow', 'Google'].map((src, i) => (
+          <div class="card flex flex-col p-6">
+            <svg class="size-7 text-gold" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.5 6C6.5 7 4.5 9.6 4.5 13v5h6v-6H7.6c.2-2 1.4-3.4 3.2-4.1zm10 0c-3 1-5 3.6-5 7v5h6v-6h-2.9c.2-2 1.4-3.4 3.2-4.1z" /></svg>
+            <div class="mt-4 space-y-2.5" aria-hidden="true">
+              <div class="skel h-3 w-full" />
+              <div class="skel h-3 w-[92%]" />
+              <div class="skel h-3 w-[70%]" />
+            </div>
+            <div class="mt-auto flex items-center gap-3 pt-6">
+              <span class="skel size-9 rounded-full!" aria-hidden="true" />
+              <span class="flex-1 space-y-1.5" aria-hidden="true"><span class="skel block h-2.5 w-24" /><span class="skel block h-2 w-16" /></span>
+              <span class="chip px-2.5! py-1! text-[11px]!">{src}</span>
+            </div>
+            <p class="sr-only">Review slot {i + 1}: waiting for a live review from {src}.</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- ============================================================ EXPERIENCE -->
+  <section id="experience" class="mx-auto max-w-[1280px] scroll-mt-32 px-4 pt-16 md:px-6 md:pt-20" aria-labelledby="exp-title">
+    <div class="grid gap-3 md:grid-cols-3 md:gap-4">
+      <div class="card p-6 md:col-span-2 md:p-8">
+        <div class="flex items-center justify-between">
+          <h2 id="exp-title" data-split class="font-display text-title">Experience</h2>
+          {demo && <span class="label text-gold-deep">Sample</span>}
+        </div>
+        <ol class="mt-6">
+          {
+            career.map((m) => (
+              <li class="flex gap-4 border-t border-ink/8 py-6 first:border-t-0 first:pt-2">
+                <span class="grid size-12 shrink-0 place-items-center rounded-md bg-night font-display text-base text-gold">
+                  {m.org.split(' ').map((w) => w[0]).join('').slice(0, 2)}
+                </span>
+                <div class="min-w-0 flex-1">
+                  <p class="font-bold">{m.title}</p>
+                  <p class="text-sm text-slate">{m.org} · {m.year}</p>
+                  <p class="mt-2 max-w-xl text-sm leading-relaxed text-slate">{m.text}</p>
+                </div>
+                {m.photo && <img src={unsplash(m.photo, 240, 0.75)} alt="" loading="lazy" class="hidden h-16 w-24 shrink-0 rounded-sm object-cover sm:block" />}
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+      <div class="space-y-3 md:space-y-4">
+        <div class="card p-6">
+          <p class="label text-slate">Licenses & certifications</p>
+          <div class="mt-4 flex gap-3">
+            <svg class="size-10 shrink-0 text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M12 2.5 4 6v5.5c0 4.8 3.4 8.6 8 10 4.6-1.4 8-5.2 8-10V6z"></path><path d="m8.5 12 2.5 2.5 4.5-5"></path></svg>
+            <div>
+              <p class="font-bold leading-snug">Real Estate Salesperson License</p>
+              <p class="text-sm text-slate">California Department of Real Estate</p>
+              <p class="mt-1 text-xs text-slate">Issued {profile.licenseIssued.value} · {site.dre.value}</p>
+              <a href={DRE_LOOKUP} target="_blank" rel="noopener" class="mt-3 inline-block rounded-full border border-ink/15 px-3 py-1.5 text-xs font-bold hover:border-ink/40">Show credential ↗</a>
+            </div>
+          </div>
+        </div>
+        <div class="card p-6">
+          <p class="label flex justify-between text-slate">Specialties {demo && <span class="text-gold-deep">Sample</span>}</p>
+          <div class="mt-4 flex flex-wrap gap-2">{profile.specialties.value.map((s) => <span class="chip">{s}</span>)}</div>
+        </div>
+        <div class="card p-6">
+          <p class="label text-slate">Service areas</p>
+          <div class="mt-4 flex flex-wrap gap-2">{cityCounts.map(([c, n]) => <span class="chip">{c} <span class="text-slate">{n}</span></span>)}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ VIDEOS -->
+  <section id="videos" class="mx-auto max-w-[1280px] scroll-mt-32 px-4 pt-16 md:px-6 md:pt-20" aria-labelledby="videos-title">
+    <div class="card p-5 md:p-8">
+      <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p class="label text-slate">YouTube {demo && <span class="text-gold-deep">· Sample</span>}</p>
+          <h2 id="videos-title" data-split class="mt-2 font-display text-title">Videos</h2>
+        </div>
+        <a href={site.youtube.value} target="_blank" rel="noopener" class="btn btn-ghost self-start md:self-auto">Subscribe ↗</a>
+      </div>
+      <div class="mt-6 flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none]">
+        {
+          videoList.map((v, i) => (
+            <a href={site.youtube.value} target="_blank" rel="noopener" class="group relative block aspect-[9/16] w-[46vw] shrink-0 overflow-hidden rounded-md bg-night sm:w-[30vw] md:w-[200px]">
+              {i === 0 ? (
+                <video class="absolute inset-0 size-full object-cover" autoplay muted loop playsinline preload="none" aria-hidden="true">
+                  <source src={videos.hero.sd} type="video/mp4" />
+                </video>
+              ) : (
+                <img src={unsplash(v.thumb, 420, 16 / 9)} alt="" loading="lazy" class="absolute inset-0 size-full object-cover transition-transform duration-1000 ease-out-expo group-hover:scale-105" />
+              )}
+              <span class="absolute inset-0 bg-gradient-to-t from-night/90 via-transparent to-transparent" />
+              <span class="absolute top-2.5 left-2.5 rounded-full bg-night/50 px-2 py-0.5 text-[11px] font-bold text-porcelain backdrop-blur">{v.minutes}</span>
+              <span class="absolute inset-x-3 bottom-3 text-sm leading-snug font-semibold text-porcelain">{v.title}</span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ POSTS (feed) -->
+  <section id="posts" class="mx-auto max-w-[1280px] scroll-mt-32 px-4 pt-16 pb-24 md:px-6 md:pt-20 md:pb-32" aria-labelledby="posts-title">
+    <div class="grid gap-4 lg:grid-cols-12">
+      <div class="space-y-4 lg:col-span-7">
+        <h2 id="posts-title" data-split class="font-display text-title">Posts</h2>
+
+        {
+          [
+            { kind: 'article', post: posts[0] },
+            { kind: 'sold', home: soldHomes[1] },
+            { kind: 'video', video: videoList[2] },
+            { kind: 'article', post: posts[1] },
+          ].map((item) => (
+            <article class="card overflow-hidden" data-reveal>
+              <header class="flex items-center gap-3 p-4 pb-3">
+                <span class="grid size-10 place-items-center rounded-full bg-night font-display text-sm text-gold">{site.initials}</span>
+                <div class="min-w-0 flex-1 leading-tight">
+                  <p class="text-sm font-bold">{site.name.value}</p>
+                  <p class="text-xs text-slate">
+                    {item.kind === 'article' && `${longDate(item.post!.date)} · Article`}
+                    {item.kind === 'sold' && `${longDate(item.home!.closeDate)} · Just sold`}
+                    {item.kind === 'video' && 'YouTube Shorts'}
+                    {demo && ' · Sample'}
+                  </p>
+                </div>
+              </header>
+              {item.kind === 'article' && (
+                <>
+                  <p class="px-4 pb-3 text-[0.95rem] leading-relaxed">{item.post!.excerpt}</p>
+                  <button type="button" data-post={item.post!.slug} class="group block w-full text-left">
+                    <img src={unsplash(item.post!.cover, 1000, 0.52)} alt="" loading="lazy" class="aspect-[1.9] w-full object-cover" />
+                    <span class="block border-t border-ink/8 bg-mist/60 px-4 py-3">
+                      <span class="label block text-slate">{item.post!.tag} · {item.post!.minutes} min read</span>
+                      <span class="mt-1 block font-display text-xl leading-snug transition-colors group-hover:text-gold-deep">{item.post!.title}</span>
+                    </span>
+                  </button>
+                </>
+              )}
+              {item.kind === 'sold' && (
+                <>
+                  <p class="px-4 pb-3 text-[0.95rem] leading-relaxed">
+                    Just sold in {item.home!.neighborhood}, {item.home!.city}: {item.home!.beds} bedrooms, {item.home!.sqft.toLocaleString('en-US')} sqft, closed at {money(item.home!.soldPrice)} ({overLabel(item.home!.soldPrice, item.home!.listPrice)}).
+                  </p>
+                  <button type="button" data-home-tile={item.home!.id} class="group relative block w-full">
+                    <img src={unsplash(item.home!.photo, 1000, 0.62)} alt="" loading="lazy" class="aspect-[1.6] w-full object-cover" />
+                    <span class="absolute top-3 left-3 rounded-full bg-night px-3 py-1 text-xs font-bold text-gold">SOLD</span>
+                  </button>
+                </>
+              )}
+              {item.kind === 'video' && (
+                <>
+                  <p class="px-4 pb-3 text-[0.95rem] leading-relaxed">New short: {item.video!.title}. Watch it on the channel.</p>
+                  <a href={site.youtube.value} target="_blank" rel="noopener" class="group relative block">
+                    <img src={unsplash(item.video!.thumb, 1000, 0.62)} alt="" loading="lazy" class="aspect-[1.6] w-full object-cover" />
+                    <span class="absolute top-1/2 left-1/2 grid size-16 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-porcelain/90 text-night transition-transform duration-500 ease-out-back group-hover:scale-110">
+                      <svg class="ml-1 size-5" viewBox="0 0 12 12" fill="currentColor"><path d="M3 1.5v9l7.5-4.5z" /></svg>
+                    </span>
+                  </a>
+                </>
+              )}
+              <footer class="flex gap-1 border-t border-ink/8 p-1.5">
+                {item.kind === 'article' && <button type="button" data-post={item.post!.slug} class="post-act">Read article</button>}
+                {item.kind === 'sold' && <button type="button" data-home-tile={item.home!.id} class="post-act">View home</button>}
+                {item.kind === 'video' && <a href={site.youtube.value} target="_blank" rel="noopener" class="post-act">Watch</a>}
+                <button type="button" data-share class="post-act">Share</button>
+                <button type="button" data-chat-open class="post-act">Message</button>
+              </footer>
+            </article>
+          ))
+        }
+      </div>
+
+      <aside class="lg:col-span-5">
+        <div class="space-y-4 lg:sticky lg:top-36">
+          <div class="card p-6">
+            <p class="font-display text-2xl">Intro</p>
+            <ul class="mt-4 space-y-3 text-sm">
+              <li class="flex gap-3"><span class="text-gold">●</span>{site.role} at {site.brokerage.value}</li>
+              <li class="flex gap-3"><span class="text-gold">●</span>Lives and works in San Jose, CA</li>
+              <li class="flex gap-3"><span class="text-gold">●</span>Speaks {profile.languages.value.join(' and ')}</li>
+              <li class="flex gap-3"><span class="text-gold">●</span>{soldStats.count} homes sold across {soldStats.cities} Bay Area cities</li>
+              <li class="flex gap-3"><span class="text-gold">●</span><a href={DRE_LOOKUP} target="_blank" rel="noopener" class="underline decoration-gold underline-offset-4">{site.dre.value}</a></li>
+            </ul>
+            {demo && <p class="label mt-5 text-gold-deep">Sample details</p>}
+          </div>
+          <div class="card p-6">
+            <div class="flex items-center justify-between">
+              <p class="font-display text-2xl">Photos</p>
+              <a href="#sold" data-tab-link class="text-sm font-bold">See all</a>
+            </div>
+            <div class="mt-4 grid grid-cols-3 gap-1.5 overflow-hidden rounded-md">
+              {soldHomes.slice(0, 9).map((h) => (
+                <button type="button" data-home-tile={h.id} class="aspect-square overflow-hidden">
+                  <img src={unsplash(h.photo, 240, 1)} alt="" loading="lazy" class="size-full object-cover transition-transform duration-700 hover:scale-110" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <script type="application/json" id="v3-data" set:html={JSON.stringify(data)} />
+  <script type="application/json" id="homes-data" set:html={JSON.stringify(mapHomes)} />
+</Layout>
+
+<style>
+  .tab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.95rem 0.9rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--color-slate);
+    white-space: nowrap;
+    transition: color 0.3s;
+  }
+  .tab:hover,
+  .tab.is-active {
+    color: var(--color-ink);
+  }
+  .tab-count {
+    border-radius: 9999px;
+    background: var(--color-mist);
+    padding: 0.1rem 0.45rem;
+    font-size: 0.7rem;
+  }
+  .tab-indicator {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    height: 2px;
+    width: 0;
+    background: var(--color-night);
+    transition:
+      transform 0.5s var(--ease-out-expo),
+      width 0.5s var(--ease-out-expo);
+  }
+  .menu-item {
+    display: block;
+    width: 100%;
+    border-radius: 10px;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: left;
+  }
+  .menu-item:hover {
+    background: var(--color-mist);
+  }
+  .hl:global(.is-seen) .hl-ring {
+    background: var(--color-slate-light);
+  }
+  .bar {
+    fill: var(--color-night);
+    transform-box: fill-box;
+    transform-origin: bottom;
+  }
+  .bar:last-child {
+    fill: var(--color-gold);
+  }
+  .rot-img {
+    opacity: 0;
+    transform: scale(1.08);
+    transition:
+      opacity 1s var(--ease-out-expo),
+      transform 3.5s ease-out;
+  }
+  .rot-img:global(.is-on) {
+    opacity: 0.85;
+    transform: none;
+  }
+  .slot,
+  :global(.day) {
+    border-radius: 10px;
+    border: 1px solid color-mix(in oklab, var(--color-ink) 12%, transparent);
+    padding: 0.35rem 0;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-align: center;
+    transition: background 0.3s, color 0.3s, border-color 0.3s;
+  }
+  .slot[aria-pressed='true'],
+  :global(.day[aria-pressed='true']) {
+    background: var(--color-night);
+    border-color: var(--color-night);
+    color: var(--color-porcelain);
+  }
+  .post-act {
+    flex: 1;
+    border-radius: 10px;
+    padding: 0.6rem 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-slate);
+    text-align: center;
+    transition: background 0.3s, color 0.3s;
+  }
+  .post-act:hover {
+    background: var(--color-mist);
+    color: var(--color-ink);
+  }
+</style>

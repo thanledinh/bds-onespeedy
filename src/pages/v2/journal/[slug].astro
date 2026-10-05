@@ -1,0 +1,66 @@
+---
+import Layout from '../../../v2/Layout.astro';
+import Sample from '../../../v2/Sample.astro';
+import { site } from '../../../config/site';
+import { posts, type Post } from '../../../data/content';
+import { unsplash, srcset, longDate } from '../../../lib/img';
+
+export function getStaticPaths() {
+  return posts.map((post, i) => ({ params: { slug: post.slug }, props: { post, next: posts[(i + 1) % posts.length] } }));
+}
+interface Props {
+  post: Post;
+  next: Post;
+}
+const { post, next } = Astro.props;
+---
+
+<Layout title={post.title} page="article" description={post.excerpt}>
+  <article>
+    <header class="mx-auto max-w-[1680px] px-5 pt-36 md:px-10 md:pt-48">
+      <a href="/v2/journal" class="label text-stone transition-colors hover:text-ink">← Journal</a>
+      <div class="mt-12 grid gap-10 lg:grid-cols-12">
+        <div class="lg:col-span-9">
+          <p class="label flex flex-wrap items-center gap-3 text-stone">{post.tag} · {longDate(post.date)} · {post.minutes} min read {post.sample && <Sample />}</p>
+          <h1 data-split class="mt-6 font-serif text-title font-light">{post.title}</h1>
+        </div>
+        <p data-reveal class="self-end text-lg leading-relaxed text-stone lg:col-span-3">{post.excerpt}</p>
+      </div>
+    </header>
+
+    <div class="mx-auto mt-16 max-w-[1680px] px-5 md:px-10">
+      <div data-img-reveal class="aspect-[4/3] overflow-hidden rounded-sm md:aspect-[21/9]">
+        <img data-parallax="6" src={unsplash(post.cover, 2200, 0.43)} srcset={srcset(post.cover, 0.43)} sizes="100vw" alt="" class="size-full scale-[1.14] object-cover" />
+      </div>
+    </div>
+
+    <div class="mx-auto grid max-w-[1680px] gap-12 px-5 py-20 md:px-10 md:py-28 lg:grid-cols-12">
+      <aside class="lg:col-span-3">
+        <div class="flex items-center gap-4 lg:sticky lg:top-28 lg:block">
+          <div class="hatch grid size-16 shrink-0 place-items-center rounded-full bg-bone-2 text-stone lg:size-20">
+            <span class="font-serif text-2xl">{site.initials}</span>
+          </div>
+          <div class="lg:mt-5">
+            <p class="font-serif text-2xl">{site.name.value}</p>
+            <p class="text-sm text-stone">{site.role}</p>
+            <a href="/v2/contact" class="label mt-4 inline-block border-b border-ink/30 pb-1 hover:border-ink">Ask a question</a>
+          </div>
+        </div>
+      </aside>
+      <div class="prose-v2 max-w-2xl lg:col-span-7">
+        {
+          post.body.map((b) =>
+            'p' in b ? <p>{b.p}</p> : 'h2' in b ? <h2>{b.h2}</h2> : 'quote' in b ? <blockquote>{b.quote}</blockquote> : <ul>{b.list.map((li) => <li>{li}</li>)}</ul>,
+          )
+        }
+      </div>
+    </div>
+  </article>
+
+  <a href={`/v2/journal/${next.slug}`} data-dark data-cursor-text="Next" class="group block bg-forest text-cream">
+    <div class="mx-auto grid max-w-[1680px] gap-6 px-5 py-24 md:grid-cols-12 md:items-end md:px-10 md:py-32">
+      <p class="label text-sage md:col-span-3">Next article</p>
+      <p class="font-serif text-title font-light transition-all duration-700 ease-out-expo group-hover:italic md:col-span-9">{next.title}</p>
+    </div>
+  </a>
+</Layout>

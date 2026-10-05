@@ -1,0 +1,344 @@
+---
+import '@fontsource/cormorant-garamond/300.css';
+import '@fontsource/cormorant-garamond/400.css';
+import '@fontsource/cormorant-garamond/500.css';
+import '@fontsource/cormorant-garamond/300-italic.css';
+import '@fontsource/cormorant-garamond/400-italic.css';
+import '@fontsource-variable/manrope';
+import './styles.css';
+import Button from './Button.astro';
+import VersionSwitch from '../components/VersionSwitch.astro';
+import { site, assertNoPlaceholders } from '../config/site';
+
+assertNoPlaceholders();
+
+interface Props {
+  title?: string;
+  description?: string;
+  page?: string;
+  /** Keep the nav on a glass background from the top (pages without a full-bleed hero). */
+  navSolid?: boolean;
+}
+const { title, description = site.seo.description, page = '', navSolid = false } = Astro.props;
+const fullTitle = title ? `${title} — ${site.name.value}` : site.seo.title;
+
+const links = [
+  { label: 'Sold', href: '/v2/sold' },
+  { label: 'About', href: '/v2/about' },
+  { label: 'Journal', href: '/v2/journal' },
+  { label: 'Contact', href: '/v2/contact' },
+];
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const active = (href: string) => path === href || path.startsWith(href + '/');
+const tel = site.phone.value.replace(/[^\d+]/g, '');
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {site.mode === 'demo' && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="theme-color" content="#1f2c25" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://images.unsplash.com" />
+    <script is:inline>
+      document.documentElement.classList.add('js');
+      setTimeout(function () {
+        if (!window.__motion) document.documentElement.classList.remove('js');
+      }, 2500);
+    </script>
+    <style is:global>
+      .js [data-split],
+      .js [data-pre-hide] {
+        visibility: hidden;
+      }
+      [data-loader] {
+        display: none;
+      }
+      .js [data-loader] {
+        display: flex;
+      }
+    </style>
+  </head>
+  <body class="bg-bone text-ink" data-page={page}>
+    <!-- Preloader / page transition -->
+    <div data-loader class="fixed inset-0 z-[180] flex flex-col justify-between bg-forest p-6 text-cream md:p-10" aria-hidden="true">
+      <div class="flex items-start justify-between">
+        <span class="label text-sage">{site.role}</span>
+        <span class="label text-sage">{site.area}</span>
+      </div>
+      <div class="flex items-end justify-between gap-6">
+        <p class="font-serif text-5xl font-light italic md:text-7xl">{site.name.value}</p>
+        <p class="font-serif text-7xl font-light tabular-nums md:text-[9rem] md:leading-none" data-loader-count>000</p>
+      </div>
+      <div class="absolute inset-x-0 bottom-0 h-px bg-cream/15"><div data-loader-bar class="h-px origin-left scale-x-0 bg-sage"></div></div>
+    </div>
+
+    <!-- Navigation -->
+    <header data-nav data-tone="dark" data-nav-solid={navSolid ? '' : undefined} class="nav fixed inset-x-0 top-0 z-50">
+      <div class="nav-bar mx-auto flex max-w-[1680px] items-center justify-between gap-6 px-5 py-4 md:px-10 md:py-5">
+        <a href="/v2" class="font-serif text-2xl leading-none font-medium tracking-tight md:text-[1.7rem]">
+          Thang Truong<span class="text-sage">.</span>
+        </a>
+        <nav aria-label="Main" class="hidden md:block">
+          <ul class="flex items-center gap-9">
+            {
+              links.map((l) => (
+                <li>
+                  <a href={l.href} class:list={['nav-link label', active(l.href) && 'is-active']} aria-current={active(l.href) ? 'page' : undefined}>
+                    {l.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+        <div class="flex items-center gap-3">
+          <a href={`tel:${tel}`} class="label hidden lg:inline">{site.phone.value}</a>
+          <button type="button" data-menu-btn aria-expanded="false" aria-controls="v2-menu" class="label md:hidden">Menu</button>
+        </div>
+      </div>
+    </header>
+
+    <div id="v2-menu" data-menu class="v2-menu fixed inset-0 z-40 flex flex-col justify-end bg-forest px-6 pb-10 text-cream md:hidden">
+      <ul>
+        {
+          [{ label: 'Home', href: '/v2' }, ...links].map((l, i) => (
+            <li class="overflow-hidden border-b border-cream/10">
+              <a href={l.href} class="menu-link flex items-baseline justify-between py-3 font-serif text-5xl font-light" style={`--i:${i}`}>
+                {l.label}
+                <span class="label text-sage">0{i + 1}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="label mt-8 text-sage">{site.phone.value} · {site.email.value}</p>
+    </div>
+
+    <main id="main" class="relative z-10 bg-bone">
+      <slot />
+    </main>
+
+    <!-- Footer (curtain reveal) -->
+    <div data-footer-wrap class="footer-wrap relative">
+      <footer data-footer data-nav-tone="dark" class="bg-forest text-cream">
+        <div class="mx-auto max-w-[1680px] px-5 pt-24 md:px-10 md:pt-32">
+          <div class="grid gap-14 lg:grid-cols-12">
+            <div class="lg:col-span-8">
+              <p class="label text-sage">Begin a conversation</p>
+              <p class="mt-6 font-serif text-title font-light">
+                Let’s find your <em class="italic">next address.</em>
+              </p>
+              <div class="mt-10 flex flex-wrap gap-3">
+                <Button href="/v2/contact" variant="light">Book a consultation</Button>
+                <Button href={`tel:${tel}`} variant="line-light">{site.phone.value}</Button>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-10 text-sm lg:col-span-4 lg:pt-4">
+              <div>
+                <p class="label text-sage">Pages</p>
+                <ul class="mt-5 space-y-2 text-cream/80">
+                  {[{ label: 'Home', href: '/v2' }, ...links].map((l) => <li><a class="hover:text-cream" href={l.href}>{l.label}</a></li>)}
+                </ul>
+              </div>
+              <div>
+                <p class="label text-sage">San Jose, CA</p>
+                <p class="mt-5 font-serif text-4xl leading-none font-light tabular-nums" data-clock>--:--</p>
+                <p class="mt-2 text-xs text-stone-light">Local time</p>
+                <ul class="mt-6 space-y-2 text-cream/80">
+                  <li><a class="break-all hover:text-cream" href={`mailto:${site.email.value}`}>{site.email.value}</a></li>
+                  <li><a class="hover:text-cream" href={site.youtube.value} target="_blank" rel="noopener">YouTube ↗</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="mt-20 flex flex-col gap-3 border-t border-cream/10 pt-6 text-xs text-stone-light md:flex-row md:justify-between">
+            <p>{site.name.value} · {site.dre.value} · {site.brokerage.value}</p>
+            <p>Equal Housing Opportunity</p>
+            <p>© {new Date().getFullYear()} {site.name.value}</p>
+          </div>
+        </div>
+        <p data-wordmark aria-hidden="true" class="wordmark overflow-hidden px-4 text-center font-serif font-light whitespace-nowrap italic md:px-8">
+          {site.name.value.split('').map((c) => (c === ' ' ? <span class="inline-block w-[0.18em]" /> : <span class="wm-letter inline-block">{c}</span>))}
+        </p>
+      </footer>
+    </div>
+
+    <!-- Custom cursor (fine pointers only) -->
+    <div data-cursor class="cursor pointer-events-none fixed top-0 left-0 z-[170] hidden" aria-hidden="true">
+      <div data-cursor-ring class="cursor-ring grid place-items-center rounded-full">
+        <span data-cursor-label class="label text-cream"></span>
+      </div>
+    </div>
+
+    {
+      site.mode === 'demo' && (
+        <p class="label pointer-events-none fixed bottom-3 left-3 z-[140] hidden rounded-full sm:block bg-forest/80 px-3 py-2 text-cream backdrop-blur-md">
+          Demo · sample content
+        </p>
+      )
+    }
+    <VersionSwitch current="b" />
+
+    <script>
+      import './motion';
+    </script>
+  </body>
+</html>
+
+<style>
+  .nav {
+    color: var(--color-cream);
+    transition:
+      transform 0.7s var(--ease-out-expo),
+      color 0.5s;
+  }
+  .nav[data-tone='light'] {
+    color: var(--color-ink);
+  }
+  .nav-bar {
+    border-bottom: 1px solid transparent;
+    transition:
+      background 0.5s,
+      border-color 0.5s,
+      backdrop-filter 0.5s;
+  }
+  :global(.nav.is-scrolled) .nav-bar {
+    max-width: none;
+    backdrop-filter: blur(18px) saturate(1.2);
+    -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  }
+  :global(.nav.is-scrolled[data-tone='light']) .nav-bar {
+    background: color-mix(in oklab, var(--color-bone) 72%, transparent);
+    border-color: color-mix(in oklab, var(--color-ink) 8%, transparent);
+  }
+  :global(.nav.is-scrolled[data-tone='dark']) .nav-bar {
+    background: color-mix(in oklab, var(--color-forest) 45%, transparent);
+    border-color: color-mix(in oklab, var(--color-cream) 10%, transparent);
+  }
+  :global(.nav.is-hidden) {
+    transform: translateY(-110%);
+  }
+  .nav-link {
+    position: relative;
+    padding: 4px 0;
+  }
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.6s var(--ease-out-expo);
+  }
+  .nav-link:hover::after,
+  .nav-link.is-active::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+  :global(.menu-open) .nav {
+    color: var(--color-cream);
+  }
+  .v2-menu {
+    visibility: hidden;
+    clip-path: inset(0 0 100% 0);
+    transition:
+      clip-path 0.9s var(--ease-in-out-quart),
+      visibility 0s linear 0.9s;
+  }
+  :global(.menu-open) .v2-menu {
+    visibility: visible;
+    clip-path: inset(0);
+    transition:
+      clip-path 0.9s var(--ease-in-out-quart),
+      visibility 0s;
+  }
+  .menu-link {
+    transform: translateY(100%);
+    transition: transform 1s var(--ease-out-expo);
+  }
+  :global(.menu-open) .menu-link {
+    transform: none;
+    transition-delay: calc(0.25s + var(--i) * 0.05s);
+  }
+  .wordmark {
+    font-size: 16vw;
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    padding-bottom: 0.24em;
+  }
+  .footer-wrap:global(.is-curtain) {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+  .footer-wrap:global(.is-curtain) > footer {
+    position: fixed;
+    inset: auto 0 0 0;
+  }
+  .cursor {
+    will-change: transform;
+  }
+  .cursor-ring {
+    width: 14px;
+    height: 14px;
+    margin: -7px 0 0 -7px;
+    background: var(--color-ink);
+    mix-blend-mode: normal;
+    transition:
+      width 0.5s var(--ease-out-expo),
+      height 0.5s var(--ease-out-expo),
+      margin 0.5s var(--ease-out-expo),
+      background 0.4s,
+      opacity 0.3s;
+  }
+  :global(.cursor.is-link) .cursor-ring {
+    width: 44px;
+    height: 44px;
+    margin: -22px 0 0 -22px;
+    background: color-mix(in oklab, var(--color-forest) 18%, transparent);
+  }
+  :global(.cursor.is-label) .cursor-ring {
+    width: 88px;
+    height: 88px;
+    margin: -44px 0 0 -44px;
+    background: var(--color-forest);
+  }
+  :global(.cursor.on-dark) .cursor-ring {
+    background: var(--color-cream);
+  }
+  :global(.cursor.on-dark.is-link) .cursor-ring {
+    background: color-mix(in oklab, var(--color-cream) 22%, transparent);
+  }
+  :global(.cursor.is-label) [data-cursor-label] {
+    opacity: 1;
+  }
+  [data-cursor-label] {
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 10px;
+  }
+</style>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('[data-menu-btn]');
+  const root = document.documentElement;
+  const setOpen = (open: boolean) => {
+    root.classList.toggle('menu-open', open);
+    btn?.setAttribute('aria-expanded', String(open));
+    if (btn) btn.textContent = open ? 'Close' : 'Menu';
+    const lenis = (window as any).__lenis;
+    if (lenis) open ? lenis.stop() : lenis.start();
+  };
+  btn?.addEventListener('click', () => setOpen(!root.classList.contains('menu-open')));
+  document.addEventListener('keydown', (e) => e.key === 'Escape' && setOpen(false));
+  window.addEventListener('pageshow', () => setOpen(false));
+</script>

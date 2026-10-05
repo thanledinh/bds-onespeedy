@@ -1,0 +1,250 @@
+---
+import Layout from '../../v2/Layout.astro';
+import Sample from '../../v2/Sample.astro';
+import IndexRow from '../../v2/IndexRow.astro';
+import { soldHomes, soldStats, soldCities, soldYears } from '../../data/sold';
+import { money, compactMoney, monthYear } from '../../lib/img';
+
+const PAGE = 15;
+const mapHomes = soldHomes.map((h) => ({
+  id: h.id,
+  lat: h.lat,
+  lng: h.lng,
+  city: h.city,
+  price: money(h.soldPrice),
+  place: `${h.neighborhood}, ${h.city}`,
+  meta: `${h.beds} bd · ${h.baths} ba · ${h.sqft.toLocaleString('en-US')} sqft · ${monthYear(h.closeDate)}`,
+}));
+---
+
+<Layout title="Sold Homes" page="sold" description="Every home Thang Truong has sold across San Jose and the Bay Area, as a list and on the map.">
+  <section class="mx-auto max-w-[1680px] px-5 pt-36 pb-14 md:px-10 md:pt-48">
+    <p class="label flex items-center gap-3 text-stone">Track record <Sample /></p>
+    <h1 data-split class="mt-6 font-serif text-hero font-light">Sold <em class="italic">homes.</em></h1>
+    <div class="mt-14 grid gap-10 border-t border-ink/15 pt-8 lg:grid-cols-12">
+      <p data-reveal class="max-w-md leading-relaxed text-stone lg:col-span-4">
+        Every closing, with the numbers that matter: size, list price, sold price, how it compared, and when it closed.
+      </p>
+      <dl class="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:col-span-7 lg:col-start-6">
+        <div><dd class="font-serif text-stat font-light whitespace-nowrap" data-count-up={String(soldStats.count)}>{soldStats.count}</dd><dt class="label mt-3 text-stone">Homes sold</dt></div>
+        <div><dd class="font-serif text-stat font-light whitespace-nowrap" data-count-up={compactMoney(soldStats.volume)}>{compactMoney(soldStats.volume)}</dd><dt class="label mt-3 text-stone">Sales volume</dt></div>
+        <div><dd class="font-serif text-stat font-light whitespace-nowrap" data-count-up={`+${soldStats.avgOverList}%`}>+{soldStats.avgOverList}%</dd><dt class="label mt-3 text-stone">Average over list</dt></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- Controls -->
+  <div class="mx-auto max-w-[1680px] px-5 md:px-10">
+    <div class="flex flex-wrap items-center gap-x-8 gap-y-4 border-y border-ink/15 py-4">
+      <div role="tablist" aria-label="View" class="flex gap-1 rounded-full border border-ink/15 p-1">
+        <button type="button" role="tab" aria-selected="true" data-view="list" class="tab">List</button>
+        <button type="button" role="tab" aria-selected="false" data-view="map" class="tab">Map</button>
+      </div>
+      <label class="sel"><span class="sr-only">City</span>
+        <select data-filter="city"><option value="">All cities</option>{soldCities.map((c) => <option value={c}>{c}</option>)}</select>
+      </label>
+      <label class="sel"><span class="sr-only">Year</span>
+        <select data-filter="year"><option value="">All years</option>{soldYears.map((y) => <option value={y}>{y}</option>)}</select>
+      </label>
+      <label class="sel"><span class="sr-only">Sort</span>
+        <select data-filter="sort">
+          <option value="date">Newest first</option>
+          <option value="price-desc">Price: high to low</option>
+          <option value="price-asc">Price: low to high</option>
+          <option value="ratio">Most over list</option>
+        </select>
+      </label>
+      <p class="label ml-auto text-stone" aria-live="polite" data-count-label>Showing {PAGE} of {soldHomes.length}</p>
+    </div>
+  </div>
+
+  <!-- List view -->
+  <section data-panel="list" class="mx-auto max-w-[1680px] px-5 pt-6 pb-32 md:px-10 md:pb-44" aria-label="Sold homes list">
+    <div data-index>
+      <div class="label hidden grid-cols-12 gap-4 border-b border-ink/15 py-4 text-stone lg:grid">
+        <span class="col-span-1">No.</span><span class="col-span-3">Neighborhood</span><span class="col-span-2">City</span><span class="col-span-2">Home</span><span class="col-span-2">Sold</span><span class="col-span-1">vs. list</span><span class="col-span-1 text-right">Closed</span>
+      </div>
+      <div data-grid>
+        {soldHomes.map((h, i) => <IndexRow home={h} n={i + 1} href="#" class={i >= PAGE ? 'hidden' : ''} />)}
+      </div>
+    </div>
+    <p data-empty class="hidden py-24 text-center font-serif text-3xl font-light text-stone">No homes match these filters.</p>
+    <div class="mt-14 flex justify-center">
+      <button type="button" data-more data-magnetic class="rounded-full border border-ink/25 px-8 py-4 text-[0.8125rem] font-semibold tracking-wide transition-colors hover:bg-forest hover:text-cream">
+        Load more homes
+      </button>
+    </div>
+    <p class="mx-auto mt-14 max-w-lg text-center text-xs text-stone">
+      For launch, this list is imported from Thang’s MLS export. The demo uses generated sample data.
+    </p>
+    <div data-index-preview class="pointer-events-none invisible fixed opacity-0 top-0 left-0 z-30 -mt-[170px] -ml-[135px] aspect-[4/5] w-[270px] overflow-hidden rounded-sm shadow-2xl shadow-ink/25" aria-hidden="true">
+      <img alt="" class="size-full object-cover" />
+    </div>
+  </section>
+
+  <!-- Map view -->
+  <section data-panel="map" hidden class="mx-auto max-w-[1680px] px-5 pt-6 pb-32 md:px-10 md:pb-44" aria-label="Sold homes map">
+    <div class="relative h-[75svh] min-h-[480px] overflow-hidden rounded-sm bg-bone-2">
+      <p class="label absolute inset-0 grid place-items-center text-stone">Loading map…</p>
+      <div data-map class="size-full"></div>
+    </div>
+    <p class="mt-4 text-xs text-stone">Pins follow the filters above. Demo pins use sample locations.</p>
+    <script type="application/json" id="homes-data" set:html={JSON.stringify(mapHomes)} />
+  </section>
+</Layout>
+
+<style>
+  .tab {
+    border-radius: 9999px;
+    padding: 0.55rem 1.2rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    transition: background 0.4s, color 0.4s;
+  }
+  .tab[aria-selected='true'] {
+    background: var(--color-forest);
+    color: var(--color-cream);
+  }
+  .sel {
+    position: relative;
+  }
+  .sel select {
+    appearance: none;
+    background: transparent;
+    border-bottom: 1px solid color-mix(in oklab, var(--color-ink) 25%, transparent);
+    padding: 0.4rem 1.6rem 0.4rem 0;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  .sel::after {
+    content: '';
+    position: absolute;
+    right: 0.2rem;
+    top: 45%;
+    width: 6px;
+    height: 6px;
+    border-right: 1.3px solid currentColor;
+    border-bottom: 1.3px solid currentColor;
+    transform: translateY(-50%) rotate(45deg);
+    pointer-events: none;
+  }
+  [data-home]:global(.is-in) {
+    animation: row-in 0.9s var(--ease-out-expo) both;
+  }
+  @keyframes row-in {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+  }
+</style>
+
+<script>
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  const PAGE = 15;
+  const grid = document.querySelector<HTMLElement>('[data-grid]')!;
+  const rows = [...grid.querySelectorAll<HTMLElement>('[data-home]')];
+  const city = document.querySelector<HTMLSelectElement>('[data-filter="city"]')!;
+  const year = document.querySelector<HTMLSelectElement>('[data-filter="year"]')!;
+  const sort = document.querySelector<HTMLSelectElement>('[data-filter="sort"]')!;
+  const more = document.querySelector<HTMLButtonElement>('[data-more]')!;
+  const label = document.querySelector<HTMLElement>('[data-count-label]')!;
+  const empty = document.querySelector<HTMLElement>('[data-empty]')!;
+  const mapEl = document.querySelector<HTMLElement>('[data-map]')!;
+  const homes: { id: string; lat: number; lng: number; city: string }[] = JSON.parse(
+    document.getElementById('homes-data')!.textContent || '[]',
+  );
+  let limit = PAGE;
+  let matchIds = new Set(homes.map((h) => h.id));
+
+  rows.forEach((r) => r.addEventListener('click', (e) => e.preventDefault()));
+
+  const sorters: Record<string, (a: HTMLElement, b: HTMLElement) => number> = {
+    date: (a, b) => b.dataset.date!.localeCompare(a.dataset.date!),
+    'price-desc': (a, b) => Number(b.dataset.price) - Number(a.dataset.price),
+    'price-asc': (a, b) => Number(a.dataset.price) - Number(b.dataset.price),
+    ratio: (a, b) => Number(b.dataset.ratio) - Number(a.dataset.ratio),
+  };
+
+  function syncMap() {
+    const map = (mapEl as any).__map;
+    if (!map || !map.getSource('homes')) return;
+    const list = homes.filter((h) => matchIds.has(h.id));
+    const src = map.getSource('homes');
+    src.setData({
+      type: 'FeatureCollection',
+      features: homes
+        .map((h, i) => ({ h, i }))
+        .filter(({ h }) => matchIds.has(h.id))
+        .map(({ h, i }) => ({ type: 'Feature', id: i, properties: h, geometry: { type: 'Point', coordinates: [h.lng, h.lat] } })),
+    });
+    if (list.length) {
+      const lngs = list.map((h) => h.lng);
+      const lats = list.map((h) => h.lat);
+      map.fitBounds(
+        [
+          [Math.min(...lngs), Math.min(...lats)],
+          [Math.max(...lngs), Math.max(...lats)],
+        ],
+        { padding: 70, maxZoom: 13, duration: 1200 },
+      );
+    }
+  }
+
+  function render(animateFrom = 0) {
+    const matches = rows
+      .filter((r) => (!city.value || r.dataset.city === city.value) && (!year.value || r.dataset.year === year.value))
+      .sort(sorters[sort.value]);
+    matchIds = new Set(matches.map((r) => r.dataset.id!));
+    rows.forEach((r) => r.classList.add('hidden'));
+    matches.forEach((r, i) => {
+      grid.append(r);
+      r.querySelectorAll('[data-n]').forEach((n) => (n.textContent = String(i + 1).padStart(2, '0')));
+      if (i < limit) {
+        r.classList.remove('hidden');
+        if (i >= animateFrom) {
+          r.classList.remove('is-in');
+          void r.offsetWidth;
+          r.style.animationDelay = `${(i - animateFrom) * 0.04}s`;
+          r.classList.add('is-in');
+        }
+      }
+    });
+    const shown = Math.min(limit, matches.length);
+    label.textContent = `Showing ${shown} of ${matches.length}`;
+    more.classList.toggle('hidden', shown >= matches.length);
+    empty.classList.toggle('hidden', matches.length > 0);
+    syncMap();
+    ScrollTrigger.refresh();
+  }
+
+  [city, year, sort].forEach((el) =>
+    el.addEventListener('change', () => {
+      limit = PAGE;
+      render(0);
+    }),
+  );
+  more.addEventListener('click', () => {
+    const from = limit;
+    limit += PAGE;
+    render(from);
+  });
+  mapEl.addEventListener('map:ready', () => {
+    const map = (mapEl as any).__map;
+    map.once('load', () => setTimeout(syncMap, 0));
+  });
+
+  // List / map toggle
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>('[data-view]')];
+  tabs.forEach((tab) =>
+    tab.addEventListener('click', () => {
+      const v = tab.dataset.view!;
+      tabs.forEach((t) => t.setAttribute('aria-selected', String(t === tab)));
+      document.querySelectorAll<HTMLElement>('[data-panel]').forEach((p) => (p.hidden = p.dataset.panel !== v));
+      const map = (mapEl as any).__map;
+      if (map) requestAnimationFrame(() => map.resize());
+      ScrollTrigger.refresh();
+    }),
+  );
+</script>

@@ -1,0 +1,401 @@
+@import "tailwindcss";
+@import "lenis/dist/lenis.css";
+
+/*
+  Option C — "Profile". Midnight navy + champagne on porcelain.
+  Own token set; components use only these tokens.
+*/
+@theme {
+  --color-*: initial;
+  --color-night: #0c1626;
+  --color-night-2: #16233a;
+  --color-night-3: #22314d;
+  --color-porcelain: #f6f5f1;
+  --color-card: #ffffff;
+  --color-mist: #ecebe6;
+  --color-ink: #0f1a2b;
+  --color-slate: #5a6476;
+  --color-slate-light: #a9b1c0;
+  --color-gold: #c2a468;
+  --color-gold-deep: #8a6a2f;
+  --color-success: #2e7d5b;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  --font-*: initial;
+  --font-display: "Fraunces Variable", ui-serif, Georgia, serif;
+  --font-sans: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --text-label: 0.6875rem;
+  --text-label--line-height: 1.3;
+  --text-label--letter-spacing: 0.16em;
+
+  --text-name: clamp(2.5rem, 5.2vw, 5rem);
+  --text-name--line-height: 1;
+  --text-name--letter-spacing: -0.025em;
+
+  --text-title: clamp(1.9rem, 3.4vw, 3.1rem);
+  --text-title--line-height: 1.05;
+  --text-title--letter-spacing: -0.02em;
+
+  --text-big: clamp(2.75rem, 4.6vw, 4.5rem);
+  --text-big--line-height: 1;
+  --text-big--letter-spacing: -0.03em;
+
+  --radius-*: initial;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-xl: 30px;
+  --radius-full: 9999px;
+
+  --shadow-card: 0 1px 2px rgb(15 26 43 / 0.04), 0 10px 30px -14px rgb(15 26 43 / 0.16);
+  --shadow-lift: 0 40px 80px -36px rgb(12 22 38 / 0.45);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --animate-ring: ring-spin 6s linear infinite;
+  @keyframes ring-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  --animate-shimmer: shimmer 1.8s ease-in-out infinite;
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+  --animate-pulse-dot: pulse-dot 2.2s ease-out infinite;
+  @keyframes pulse-dot {
+    0% {
+      box-shadow: 0 0 0 0 rgb(46 125 91 / 0.45);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgb(46 125 91 / 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgb(46 125 91 / 0);
+    }
+  }
+}
+
+@layer base {
+  html {
+    background: var(--color-porcelain);
+    color: var(--color-ink);
+    overflow-x: clip;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  ::selection {
+    background: var(--color-night);
+    color: var(--color-porcelain);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 3px;
+  }
+  dialog::backdrop {
+    background: rgb(12 22 38 / 0.6);
+    backdrop-filter: blur(6px);
+  }
+}
+
+@layer components {
+  .label {
+    font-size: var(--text-label);
+    line-height: var(--text-label--line-height);
+    letter-spacing: var(--text-label--letter-spacing);
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .mask {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-bottom: 0.12em;
+    margin-bottom: -0.12em;
+  }
+  .mask > * {
+    display: inline-block;
+  }
+
+  /* White card with hairline border. */
+  .card {
+    position: relative;
+    border-radius: var(--radius-lg);
+    background: var(--color-card);
+    border: 1px solid color-mix(in oklab, var(--color-ink) 7%, transparent);
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Spotlight that follows the pointer (profile.ts sets --mx/--my). */
+  [data-spot] {
+    isolation: isolate;
+  }
+  [data-spot]::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.5s;
+    background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgb(194 164 104 / 0.16), transparent 45%);
+    pointer-events: none;
+  }
+  [data-spot]:hover::before {
+    opacity: 1;
+  }
+
+  /* Gold foil text */
+  .foil {
+    background: linear-gradient(105deg, #8a6a2f 0%, #e6d3a3 28%, #b8975a 46%, #f3e6c4 62%, #a8873f 82%, #d9c08a 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Skeleton lines (reviews waiting for live data) */
+  .skel {
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--color-mist) 0%, #f7f6f2 50%, var(--color-mist) 100%);
+    background-size: 200% 100%;
+    animation: var(--animate-shimmer);
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 9999px;
+    border: 1px solid color-mix(in oklab, var(--color-ink) 12%, transparent);
+    background: var(--color-card);
+    padding: 0.45rem 0.85rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: background 0.3s, color 0.3s, border-color 0.3s;
+  }
+  .chip[aria-pressed="true"] {
+    background: var(--color-night);
+    border-color: var(--color-night);
+    color: var(--color-porcelain);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    padding: 0.8rem 1.35rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: background 0.3s, color 0.3s, border-color 0.3s, transform 0.3s var(--ease-out-expo);
+  }
+  .btn:active {
+    transform: scale(0.97);
+  }
+  .btn-primary {
+    background: var(--color-night);
+    color: var(--color-porcelain);
+  }
+  .btn-primary:hover {
+    background: var(--color-night-3);
+  }
+  .btn-ghost {
+    background: var(--color-card);
+    border: 1px solid color-mix(in oklab, var(--color-ink) 12%, transparent);
+  }
+  .btn-ghost:hover {
+    border-color: color-mix(in oklab, var(--color-ink) 35%, transparent);
+  }
+  .btn-gold {
+    background: linear-gradient(180deg, #d8c08b, #b8975a);
+    color: var(--color-night);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4);
+  }
+  .btn-gold:hover {
+    background: linear-gradient(180deg, #e2cd9c, #c2a468);
+  }
+
+  /* Metal business card (3D tilt + flip) */
+  .bizcard {
+    perspective: 1200px;
+  }
+  .bizcard-inner {
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.9s var(--ease-out-expo);
+    transform: rotateX(var(--rx, 0deg)) rotateY(calc(var(--ry, 0deg) + var(--flip, 0deg)));
+  }
+  .bizcard.is-flipped .bizcard-inner {
+    --flip: 180deg;
+  }
+  .bizcard.is-tracking .bizcard-inner {
+    transition: transform 0.15s linear;
+  }
+  .bizcard-face {
+    position: absolute;
+    inset: 0;
+    border-radius: 18px;
+    overflow: hidden;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background:
+      radial-gradient(120% 140% at 0% 0%, #2a3d60 0%, transparent 55%),
+      linear-gradient(135deg, #1b2a45 0%, #0c1626 48%, #1d2e4c 100%);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.12),
+      inset 0 0 0 1px rgb(255 255 255 / 0.06),
+      0 30px 60px -25px rgb(0 0 0 / 0.65);
+    color: #eef0f4;
+  }
+  .bizcard-face::before {
+    /* brushed metal grain */
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(90deg, rgb(255 255 255 / 0.018) 0 1px, transparent 1px 3px);
+    pointer-events: none;
+  }
+  .bizcard-face::after {
+    /* moving sheen */
+    content: "";
+    position: absolute;
+    inset: -40%;
+    background: linear-gradient(
+      115deg,
+      transparent 35%,
+      rgb(255 255 255 / 0.16) 45%,
+      rgb(230 211 163 / 0.18) 50%,
+      transparent 60%
+    );
+    transform: translateX(var(--sheen, -30%));
+    transition: transform 0.6s var(--ease-out-expo);
+    pointer-events: none;
+    mix-blend-mode: screen;
+  }
+  .bizcard-back {
+    transform: rotateY(180deg);
+  }
+
+  /* Avatar ring */
+  .ring-gold {
+    background: conic-gradient(from 0deg, #8a6a2f, #f3e6c4, #c2a468, #0c1626, #8a6a2f);
+  }
+}
+
+/* Chat */
+.typing span {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin: 0 2px;
+  border-radius: 50%;
+  background: var(--color-slate-light);
+  animation: typing 1.2s infinite;
+}
+.typing span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.typing span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes typing {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+.chat-input {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid color-mix(in oklab, var(--color-ink) 14%, transparent);
+  background: var(--color-porcelain);
+  padding: 0.7rem 0.9rem;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.3s;
+}
+.chat-input:focus {
+  border-color: var(--color-night);
+}
+.chat-input.is-invalid {
+  border-color: #b4532a;
+}
+
+/* Map popup for option C */
+.home-pop-c .maplibregl-popup-content {
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--color-night);
+  color: var(--color-porcelain);
+  font-family: var(--font-sans);
+  box-shadow: 0 14px 30px rgb(0 0 0 / 0.25);
+}
+.home-pop-c strong {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+.home-pop-c span {
+  font-size: 12px;
+}
+.home-pop-c em {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--color-slate-light);
+}
+.home-pop-c.maplibregl-popup-anchor-bottom .maplibregl-popup-tip,
+.home-pop-c.maplibregl-popup-anchor-bottom-left .maplibregl-popup-tip,
+.home-pop-c.maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip {
+  border-top-color: var(--color-night);
+}
+.home-pop-c.maplibregl-popup-anchor-top .maplibregl-popup-tip,
+.home-pop-c.maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
+.home-pop-c.maplibregl-popup-anchor-top-right .maplibregl-popup-tip {
+  border-bottom-color: var(--color-night);
+}
+.home-pop-c.maplibregl-popup-anchor-left .maplibregl-popup-tip {
+  border-right-color: var(--color-night);
+}
+.home-pop-c.maplibregl-popup-anchor-right .maplibregl-popup-tip {
+  border-left-color: var(--color-night);
+}
+
+/* Lift the design switch above the mobile action dock */
+@media (max-width: 639px) {
+  .vswitch {
+    bottom: 84px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

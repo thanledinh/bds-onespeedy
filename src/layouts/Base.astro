@@ -5,6 +5,7 @@ import '@fontsource/instrument-serif/400-italic.css';
 import '../styles/global.css';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import VersionSwitch from '../components/VersionSwitch.astro';
 import { site, assertNoPlaceholders } from '../config/site';
 
 assertNoPlaceholders();
@@ -68,12 +69,14 @@ const fullTitle = title ? `${title} — ${site.name.value}` : site.seo.title;
 
     {
       site.mode === 'demo' && (
-        <p class="pointer-events-none fixed bottom-3 left-3 z-40 flex items-center gap-2 rounded-full bg-ink/70 px-3 py-1.5 text-micro font-medium uppercase text-paper backdrop-blur-md">
+        <p class="pointer-events-none fixed bottom-3 left-3 z-40 hidden items-center sm:flex gap-2 rounded-full bg-ink/70 px-3 py-1.5 text-micro font-medium uppercase text-paper backdrop-blur-md">
           <span class="size-1.5 animate-pulse rounded-full bg-accent-soft" />
           Demo preview · sample content
         </p>
       )
     }
+
+    <VersionSwitch current="a" />
 
     <div data-curtain class="curtain pointer-events-none fixed inset-0 z-[150] grid place-items-center bg-ink text-paper" aria-hidden="true">
       <span class="font-serif text-3xl italic">{site.name.value}</span>

@@ -17,6 +17,8 @@ export interface SoldHome {
   soldPrice: number;
   closeDate: string; // ISO yyyy-mm-dd
   photo: string;
+  lat: number;
+  lng: number;
   sample: boolean;
 }
 
@@ -42,6 +44,28 @@ const AREAS: [string, string, number, number][] = [
   ['Westside', 'Campbell', 1020, 2],
 ];
 
+// Approximate neighborhood centres, used to place sample homes on the map.
+const CENTRES: Record<string, [number, number]> = {
+  Evergreen: [37.315, -121.775],
+  Berryessa: [37.385, -121.858],
+  'Willow Glen': [37.3, -121.895],
+  'Almaden Valley': [37.215, -121.855],
+  'Alum Rock': [37.368, -121.828],
+  'Cambrian Park': [37.258, -121.93],
+  'Blossom Valley': [37.248, -121.828],
+  'Silver Creek': [37.29, -121.795],
+  'Rose Garden': [37.333, -121.918],
+  'Milpitas Hills': [37.445, -121.88],
+  Irvington: [37.522, -121.968],
+  'Mission San Jose': [37.535, -121.925],
+  'Old Quarry': [37.345, -121.99],
+  'Cherry Chase': [37.362, -122.045],
+  'Fairway Park': [37.632, -122.04],
+  Decoto: [37.592, -122.02],
+  'Paradise Valley': [37.145, -121.68],
+  Westside: [37.282, -121.965],
+};
+
 function mulberry32(seed: number) {
   return () => {
     seed |= 0;
@@ -65,6 +89,8 @@ function generate(count: number): SoldHome[] {
   const start = new Date('2021-02-01').getTime();
   const end = new Date('2026-09-20').getTime();
   const homes: SoldHome[] = [];
+  // Separate stream for map jitter so prices/dates stay identical to earlier builds.
+  const jitter = mulberry32(95127);
 
   for (let i = 0; i < count; i++) {
     const [neighborhood, city, ppsf] = pickArea();
@@ -103,6 +129,8 @@ function generate(count: number): SoldHome[] {
       soldPrice,
       closeDate: new Date(time).toISOString().slice(0, 10),
       photo: homePhotos[i % homePhotos.length],
+      lat: +(CENTRES[neighborhood][0] + (jitter() - 0.5) * 0.022).toFixed(5),
+      lng: +(CENTRES[neighborhood][1] + (jitter() - 0.5) * 0.026).toFixed(5),
       sample: true,
     });
   }

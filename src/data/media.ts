@@ -35,6 +35,13 @@ export const photos = {
   poolModern: 'photo-1613977257363-707ba9348227',
 };
 
+/** Sample award photos (no logos or trademarked statuettes). */
+export const awardPhotos = [
+  'photo-1764874299025-d8b2251f307d',
+  'photo-1774907432786-900e87e15cfc',
+  'photo-1642104744809-14b986179927',
+];
+
 export const videos = {
   hero: {
     hd: 'https://videos.pexels.com/video-files/7578541/7578541-hd_1920_1080_30fps.mp4',

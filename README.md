@@ -11,7 +11,16 @@ npm run dev
 
 Mở http://localhost:4321
 
-## Các trang
+## Hai phương án thiết kế
+
+- **Option A** (`/`): tối, điện ảnh. Layout `src/layouts/Base.astro`, CSS `src/styles/global.css`, hiệu ứng `src/scripts/motion.ts`.
+- **Option B** (`/v2`): sáng, kiểu tạp chí cao cấp. Mọi thứ nằm trong `src/v2/` (Layout, styles, motion, bản đồ `map.ts`), trang ở `src/pages/v2/`.
+- Hai bản dùng chung dữ liệu trong `src/data` và `src/config`. Ở chế độ demo có nút chuyển "Option A / B" góc dưới phải.
+
+Option B có thêm: màn đếm khi mở web, chữ HOME có video bên trong, bảng nhà đã bán có ảnh theo chuột,
+bản đồ thật (MapLibre + OpenFreeMap, không cần API key), quy trình mua/bán, máy tính trả góp, con trỏ riêng.
+
+## Các trang (Option A)
 
 | Trang | File |
 |---|---|

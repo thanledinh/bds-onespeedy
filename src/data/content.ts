@@ -1,4 +1,4 @@
-import { photos, homePhotos } from './media';
+import { photos, homePhotos, awardPhotos } from './media';
 
 /**
  * Sample content for the demo. Every entry is flagged `sample: true` and shows a
@@ -119,14 +119,13 @@ export interface Award {
   sample: boolean;
 }
 
-export const awards: Award[] = [
-  { title: 'Award title', issuer: 'Issuing organization', year: 2025, sample: true },
-  { title: 'Award title', issuer: 'Issuing organization', year: 2024, sample: true },
-  { title: 'Award title', issuer: 'Issuing organization', year: 2024, sample: true },
-  { title: 'Award title', issuer: 'Issuing organization', year: 2023, sample: true },
-  { title: 'Award title', issuer: 'Issuing organization', year: 2022, sample: true },
-  { title: 'Award title', issuer: 'Issuing organization', year: 2021, sample: true },
-];
+export const awards: Award[] = [2025, 2024, 2024, 2023, 2022, 2021].map((year, i) => ({
+  title: 'Award title',
+  issuer: 'Issuing organization',
+  year,
+  photo: awardPhotos[i % awardPhotos.length],
+  sample: true,
+}));
 
 export interface Milestone {
   year: string;

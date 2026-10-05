@@ -7,5 +7,8 @@ export default defineConfig({
   devToolbar: { enabled: false },
   vite: {
     plugins: [tailwindcss()],
+    worker: { format: 'es' },
+    // Pre-bundle lazily imported deps so dev doesn't re-optimize mid-session.
+    optimizeDeps: { include: ['maplibre-gl', 'qrcode', 'gsap', 'gsap/ScrollTrigger', 'lenis'] },
   },
 });

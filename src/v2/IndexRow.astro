@@ -1,0 +1,50 @@
+---
+import type { SoldHome } from '../data/sold';
+import { unsplash, money, monthYear } from '../lib/img';
+
+interface Props {
+  home: SoldHome;
+  n: number;
+  href?: string;
+  class?: string;
+}
+const { home: h, n, href = '/v2/sold', class: cls = '' } = Astro.props;
+const over = (h.soldPrice / h.listPrice - 1) * 100;
+const overLabel = Math.abs(over) < 0.05 ? 'At list' : `${over > 0 ? '+' : '−'}${Math.abs(over).toFixed(1)}%`;
+---
+
+<a
+  href={href}
+  data-index-row
+  data-img={unsplash(h.photo, 700, 1.25)}
+  data-cursor-text="View"
+  data-home
+  data-city={h.city}
+  data-year={h.closeDate.slice(0, 4)}
+  data-price={h.soldPrice}
+  data-date={h.closeDate}
+  data-ratio={(h.soldPrice / h.listPrice).toFixed(4)}
+  data-id={h.id}
+  class:list={['group relative block border-b border-ink/15', cls]}
+>
+  <div class="hidden grid-cols-12 items-baseline gap-4 py-7 lg:grid">
+    <span class="label col-span-1 text-stone" data-n>{String(n).padStart(2, '0')}</span>
+    <span class="col-span-3 font-serif text-4xl font-light transition-all duration-500 ease-out-expo group-hover:pl-4 group-hover:italic">{h.neighborhood}</span>
+    <span class="col-span-2 text-sm">{h.city}</span>
+    <span class="col-span-2 text-sm text-stone">{h.beds} bd · {h.baths} ba · {h.sqft.toLocaleString('en-US')} sqft</span>
+    <span class="col-span-2 font-serif text-2xl">{money(h.soldPrice)}</span>
+    <span class="col-span-1 text-sm text-brass">{overLabel}</span>
+    <span class="col-span-1 text-right text-sm text-stone">{monthYear(h.closeDate)}</span>
+  </div>
+  <div class="flex gap-4 py-5 lg:hidden">
+    <img src={unsplash(h.photo, 240, 1)} alt="" loading="lazy" class="size-20 shrink-0 rounded-sm object-cover" />
+    <div class="min-w-0 flex-1">
+      <p class="font-serif text-2xl leading-tight font-light">{h.neighborhood}</p>
+      <p class="mt-1 text-xs text-stone">{h.city} · {h.beds} bd · {h.baths} ba · {h.sqft.toLocaleString('en-US')} sqft</p>
+      <p class="mt-2 flex items-baseline justify-between gap-3 font-serif text-xl">
+        {money(h.soldPrice)}
+        <span class="font-sans text-xs text-stone"><span class="text-brass">{overLabel}</span> · {monthYear(h.closeDate)}</span>
+      </p>
+    </div>
+  </div>
+</a>
