@@ -317,12 +317,12 @@ const PAGE = 12;
       </div>
 
       <!-- About -->
-      <div class="card col-span-2 flex flex-col justify-between gap-5 p-6" data-spot>
+      <div class="card col-span-2 flex flex-col justify-between gap-4 overflow-hidden p-6" data-spot>
         <div class="flex items-center justify-between">
           <p class="label text-slate">About</p>
           {demo && <span class="label text-gold-deep">Sample</span>}
         </div>
-        <p class="font-display text-xl leading-snug md:text-2xl">{profile.bio.value}</p>
+        <p class="font-display text-xl leading-snug md:line-clamp-3">{profile.bio.value}</p>
         <div class="flex flex-wrap items-center gap-2">
           {profile.languages.value.map((l) => <span class="chip">{l}</span>)}
           <a href="#experience" data-tab-link class="ml-auto text-sm font-bold">Experience →</a>
