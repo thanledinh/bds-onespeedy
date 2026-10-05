@@ -1,0 +1,39 @@
+---
+interface Props {
+  href: string;
+  variant?: 'dark' | 'light' | 'outline-dark' | 'outline-light';
+  external?: boolean;
+  class?: string;
+}
+const { href, variant = 'dark', external = false, class: cls = '' } = Astro.props;
+
+const shell = {
+  dark: 'bg-ink text-paper hover:bg-ink-2',
+  light: 'bg-paper text-ink hover:bg-white',
+  'outline-dark': 'border border-ink/20 text-ink hover:border-ink/60',
+  'outline-light': 'border border-paper/25 text-paper hover:border-paper/70',
+}[variant];
+
+const dot = {
+  dark: 'bg-paper text-ink',
+  light: 'bg-ink text-paper',
+  'outline-dark': 'bg-ink text-paper',
+  'outline-light': 'bg-paper text-ink',
+}[variant];
+---
+
+<a
+  href={href}
+  class:list={[
+    'group inline-flex items-center gap-4 rounded-full py-1.5 pr-1.5 pl-6 text-sm font-medium tracking-tight transition-colors duration-300',
+    shell,
+    cls,
+  ]}
+  {...external ? { target: '_blank', rel: 'noopener' } : {}}
+>
+  <span><slot /></span>
+  <span class:list={['relative grid size-9 shrink-0 place-items-center overflow-hidden rounded-full', dot]} aria-hidden="true">
+    <svg class="size-3.5 transition-transform duration-500 ease-out-expo group-hover:translate-x-[180%]" viewBox="0 0 16 16" fill="none"><path d="M2 8h11M9 3.5 13.5 8 9 12.5" stroke="currentColor" stroke-width="1.5"></path></svg>
+    <svg class="absolute size-3.5 -translate-x-[180%] transition-transform duration-500 ease-out-expo group-hover:translate-x-0" viewBox="0 0 16 16" fill="none"><path d="M2 8h11M9 3.5 13.5 8 9 12.5" stroke="currentColor" stroke-width="1.5"></path></svg>
+  </span>
+</a>

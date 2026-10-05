@@ -1,0 +1,62 @@
+---
+import type { SoldHome } from '../data/sold';
+import SampleTag from './SampleTag.astro';
+import { unsplash, srcset, money, monthYear } from '../lib/img';
+
+interface Props {
+  home: SoldHome;
+  sizes?: string;
+  class?: string;
+  eager?: boolean;
+}
+const { home, sizes = '(min-width: 1024px) 30vw, (min-width: 640px) 46vw, 90vw', class: cls = '', eager = false } = Astro.props;
+
+const diff = (home.soldPrice / home.listPrice - 1) * 100;
+const diffLabel =
+  Math.abs(diff) < 0.05 ? 'At list price' : `${diff > 0 ? '+' : '−'}${Math.abs(diff).toFixed(1)}% ${diff > 0 ? 'over' : 'under'} list`;
+---
+
+<article
+  class:list={['group relative', cls]}
+  data-home
+  data-city={home.city}
+  data-year={home.closeDate.slice(0, 4)}
+  data-price={home.soldPrice}
+  data-date={home.closeDate}
+  data-ratio={(home.soldPrice / home.listPrice).toFixed(4)}
+>
+  <div class="relative aspect-[4/3] overflow-hidden rounded-md bg-paper-2">
+    <img
+      src={unsplash(home.photo, 900, 0.75)}
+      srcset={srcset(home.photo, 0.75, [480, 768, 1100])}
+      sizes={sizes}
+      alt={`${home.type} home in ${home.neighborhood}, ${home.city}`}
+      loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
+      width="900"
+      height="675"
+      class="size-full object-cover transition-transform duration-1000 ease-out-expo group-hover:scale-[1.045]"
+    />
+    <div class="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
+      <span class="rounded-full bg-paper/90 px-3 py-1 text-micro font-medium uppercase text-ink backdrop-blur">
+        Sold · {monthYear(home.closeDate)}
+      </span>
+      {home.sample && <SampleTag tone="glass" />}
+    </div>
+  </div>
+
+  <div class="mt-5 flex items-baseline justify-between gap-4">
+    <p class="font-serif text-4xl leading-none tracking-tight">{money(home.soldPrice)}</p>
+    <p class:list={['text-sm whitespace-nowrap', diff > 0 ? 'text-accent' : 'text-muted']}>{diffLabel}</p>
+  </div>
+  <p class="mt-2 text-sm text-muted">{home.neighborhood}, {home.city} · {home.type}</p>
+
+  <dl class="mt-4 grid grid-cols-4 border-t border-ink/10 pt-3 text-sm">
+    <div><dt class="sr-only">Bedrooms</dt><dd><span class="font-medium">{home.beds}</span> <span class="text-muted">bd</span></dd></div>
+    <div><dt class="sr-only">Bathrooms</dt><dd><span class="font-medium">{home.baths}</span> <span class="text-muted">ba</span></dd></div>
+    <div class="col-span-2 text-right"><dt class="sr-only">Living area</dt><dd><span class="font-medium">{home.sqft.toLocaleString('en-US')}</span> <span class="text-muted">sqft</span></dd></div>
+  </dl>
+  <p class="mt-1.5 text-xs text-muted">
+    Listed {money(home.listPrice)} · Closed {new Date(home.closeDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+  </p>
+</article>

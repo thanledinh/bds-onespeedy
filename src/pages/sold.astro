@@ -1,0 +1,184 @@
+---
+import Base from '../layouts/Base.astro';
+import SoldCard from '../components/SoldCard.astro';
+import SampleTag from '../components/SampleTag.astro';
+import { soldHomes, soldStats, soldCities, soldYears } from '../data/sold';
+import { compactMoney } from '../lib/img';
+
+const PAGE = 12;
+---
+
+<Base title="Sold Homes" description="Homes sold by Thang Truong across San Jose and the Bay Area: price, size and close date for each.">
+  <section class="mx-auto max-w-[1600px] px-6 pt-36 pb-16 md:px-12 md:pt-48 md:pb-20">
+    <p class="flex items-center gap-3 text-micro font-medium uppercase text-muted">
+      <span class="text-accent">Track record</span>
+      {soldStats.sample && <SampleTag />}
+    </p>
+    <h1 data-split class="mt-6 text-mega font-medium">Sold homes</h1>
+    <div class="mt-12 grid gap-10 border-t border-ink/10 pt-8 lg:grid-cols-12">
+      <p data-reveal class="text-lg leading-relaxed text-muted lg:col-span-5">
+        Every home Thang has helped buy or sell, with the numbers that matter: beds, baths, size, list price, sold price and close date.
+      </p>
+      <dl class="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:col-span-6 lg:col-start-7">
+        <div>
+          <dd class="text-stat-sm font-medium whitespace-nowrap" data-count={String(soldStats.count)}>{soldStats.count}</dd>
+          <dt class="mt-3 text-sm text-muted">Homes sold</dt>
+        </div>
+        <div>
+          <dd class="text-stat-sm font-medium whitespace-nowrap" data-count={compactMoney(soldStats.volume)}>{compactMoney(soldStats.volume)}</dd>
+          <dt class="mt-3 text-sm text-muted">Sales volume</dt>
+        </div>
+        <div>
+          <dd class="text-stat-sm font-medium whitespace-nowrap" data-count={`+${soldStats.avgOverList}%`}>+{soldStats.avgOverList}%</dd>
+          <dt class="mt-3 text-sm text-muted">Avg. vs. list</dt>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- Filters -->
+  <div class="border-y border-ink/10" data-filters>
+    <div class="mx-auto flex max-w-[1600px] flex-wrap items-center gap-3 px-6 py-4 md:px-12">
+      <label class="filter">
+        <span class="sr-only">City</span>
+        <select data-filter="city">
+          <option value="">All cities</option>
+          {soldCities.map((c) => <option value={c}>{c}</option>)}
+        </select>
+      </label>
+      <label class="filter">
+        <span class="sr-only">Year closed</span>
+        <select data-filter="year">
+          <option value="">All years</option>
+          {soldYears.map((y) => <option value={y}>{y}</option>)}
+        </select>
+      </label>
+      <label class="filter">
+        <span class="sr-only">Sort</span>
+        <select data-filter="sort">
+          <option value="date">Newest first</option>
+          <option value="price-desc">Price: high to low</option>
+          <option value="price-asc">Price: low to high</option>
+          <option value="ratio">Highest over list</option>
+        </select>
+      </label>
+      <p class="ml-auto text-sm text-muted" aria-live="polite" data-count-label>
+        Showing {Math.min(PAGE, soldHomes.length)} of {soldHomes.length}
+      </p>
+    </div>
+  </div>
+
+  <section class="mx-auto max-w-[1600px] px-6 pt-12 pb-32 md:px-12 md:pb-44" aria-label="Sold homes list">
+    <div data-grid class="grid gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+      {soldHomes.map((home, i) => <SoldCard home={home} eager={i < 3} class={i >= PAGE ? 'hidden' : ''} />)}
+    </div>
+    <p data-empty class="hidden py-20 text-center text-muted">No homes match these filters.</p>
+    <div class="mt-16 flex justify-center">
+      <button
+        type="button"
+        data-more
+        class="rounded-full border border-ink/20 px-7 py-3.5 text-sm font-medium transition-colors duration-300 hover:border-ink/60"
+      >
+        Load more homes
+      </button>
+    </div>
+    <p class="mx-auto mt-16 max-w-xl text-center text-xs text-muted">
+      For launch this list is imported from Thang’s MLS export, so new closings can be added in seconds. Demo data is generated for layout only.
+    </p>
+  </section>
+</Base>
+
+<style>
+  .filter {
+    position: relative;
+    display: inline-flex;
+  }
+  .filter select {
+    border-radius: 9999px;
+    border: 1px solid color-mix(in oklab, var(--color-ink) 18%, transparent);
+    background: var(--color-paper);
+    padding: 0.6rem 2.4rem 0.6rem 1.1rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+  .filter::after {
+    content: '';
+    position: absolute;
+    right: 1.05rem;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: translateY(-70%) rotate(45deg);
+    pointer-events: none;
+  }
+  [data-home].is-in {
+    animation: card-in 0.9s var(--ease-out-expo) both;
+  }
+  @keyframes card-in {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+  }
+</style>
+
+<script>
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  const PAGE = 12;
+  const grid = document.querySelector<HTMLElement>('[data-grid]')!;
+  const cards = [...grid.querySelectorAll<HTMLElement>('[data-home]')];
+  const city = document.querySelector<HTMLSelectElement>('[data-filter="city"]')!;
+  const year = document.querySelector<HTMLSelectElement>('[data-filter="year"]')!;
+  const sort = document.querySelector<HTMLSelectElement>('[data-filter="sort"]')!;
+  const more = document.querySelector<HTMLButtonElement>('[data-more]')!;
+  const label = document.querySelector<HTMLElement>('[data-count-label]')!;
+  const empty = document.querySelector<HTMLElement>('[data-empty]')!;
+  let limit = PAGE;
+
+  const sorters: Record<string, (a: HTMLElement, b: HTMLElement) => number> = {
+    date: (a, b) => b.dataset.date!.localeCompare(a.dataset.date!),
+    'price-desc': (a, b) => Number(b.dataset.price) - Number(a.dataset.price),
+    'price-asc': (a, b) => Number(a.dataset.price) - Number(b.dataset.price),
+    ratio: (a, b) => Number(b.dataset.ratio) - Number(a.dataset.ratio),
+  };
+
+  function render(animateFrom = 0) {
+    const matches = cards
+      .filter((c) => (!city.value || c.dataset.city === city.value) && (!year.value || c.dataset.year === year.value))
+      .sort(sorters[sort.value]);
+    cards.forEach((c) => c.classList.add('hidden'));
+    matches.forEach((c, i) => {
+      grid.append(c);
+      if (i < limit) {
+        c.classList.remove('hidden');
+        if (i >= animateFrom) {
+          c.classList.remove('is-in');
+          void c.offsetWidth;
+          c.style.animationDelay = `${(i - animateFrom) * 0.05}s`;
+          c.classList.add('is-in');
+        }
+      }
+    });
+    const shown = Math.min(limit, matches.length);
+    label.textContent = `Showing ${shown} of ${matches.length}`;
+    more.classList.toggle('hidden', shown >= matches.length);
+    empty.classList.toggle('hidden', matches.length > 0);
+    ScrollTrigger.refresh();
+  }
+
+  const reset = () => {
+    limit = PAGE;
+    render(0);
+    const top = grid.getBoundingClientRect().top + window.scrollY - 220;
+    if (window.scrollY > top) (window as any).__lenis?.scrollTo(top) ?? window.scrollTo({ top });
+  };
+  [city, year, sort].forEach((el) => el.addEventListener('change', reset));
+  more.addEventListener('click', () => {
+    const from = limit;
+    limit += PAGE;
+    render(from);
+  });
+</script>

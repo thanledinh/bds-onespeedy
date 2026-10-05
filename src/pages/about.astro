@@ -1,0 +1,214 @@
+---
+import Base from '../layouts/Base.astro';
+import Button from '../components/Button.astro';
+import SectionHead from '../components/SectionHead.astro';
+import SampleTag from '../components/SampleTag.astro';
+import Placeholder from '../components/Placeholder.astro';
+import { site } from '../config/site';
+import { soldStats } from '../data/sold';
+import { career, awards } from '../data/content';
+import { unsplash, srcset, compactMoney } from '../lib/img';
+---
+
+<Base title="About" description="Meet Thang Truong, real estate agent in San Jose and the Bay Area: career, awards and license.">
+  <!-- ============================================================ INTRO -->
+  <section class="mx-auto max-w-[1600px] px-6 pt-36 pb-24 md:px-12 md:pt-48 md:pb-36">
+    <div class="grid gap-14 lg:grid-cols-12">
+      <div class="lg:col-span-7">
+        <p class="flex items-center gap-3 text-micro font-medium uppercase text-muted">
+          <span class="text-accent">About</span>
+          <SampleTag />
+        </p>
+        <h1 data-split class="mt-6 text-mega font-medium">{site.firstName} <br />{site.lastName}</h1>
+        <p data-reveal class="mt-8 font-serif text-3xl italic md:text-4xl">{site.role}, {site.area}</p>
+        <div data-reveal class="mt-10 max-w-xl space-y-5 text-lg leading-relaxed text-muted">
+          <p>
+            This is where Thang’s story goes: where it started, what brought Thang to real estate, and the neighborhoods Thang
+            knows street by street.
+          </p>
+          <p>
+            A second paragraph can cover how Thang works with buyers and sellers, the languages spoken, and what clients can
+            expect from the first call to closing day.
+          </p>
+        </div>
+        <div data-reveal class="mt-10 flex flex-wrap gap-3">
+          <Button href="/contact">Work with Thang</Button>
+          <Button href="/sold" variant="outline-dark">See sold homes</Button>
+        </div>
+      </div>
+      <div class="lg:col-span-5">
+        <div data-reveal class="lg:sticky lg:top-28">
+          <Placeholder label="Professional portrait" icon="portrait" class="aspect-[4/5] rounded-lg" />
+          <p class="mt-3 text-xs text-muted">Portrait photo to be provided by Thang.</p>
+        </div>
+      </div>
+    </div>
+
+    <dl class="mt-24 grid grid-cols-2 gap-y-10 border-t border-ink/10 pt-8 md:grid-cols-4">
+      <div>
+        <dd class="text-stat-sm font-medium whitespace-nowrap" data-count={String(soldStats.count)}>{soldStats.count}</dd>
+        <dt class="mt-3 text-sm text-muted">Homes sold</dt>
+      </div>
+      <div>
+        <dd class="text-stat-sm font-medium whitespace-nowrap" data-count={compactMoney(soldStats.volume)}>{compactMoney(soldStats.volume)}</dd>
+        <dt class="mt-3 text-sm text-muted">Sales volume</dt>
+      </div>
+      <div>
+        <dd class="text-stat-sm font-medium whitespace-nowrap" data-count={String(soldStats.cities)}>{soldStats.cities}</dd>
+        <dt class="mt-3 text-sm text-muted">Cities served</dt>
+      </div>
+      <div>
+        <dd class="text-stat-sm font-medium">CA</dd>
+        <dt class="mt-3 text-sm text-muted">{site.dre.value}</dt>
+      </div>
+    </dl>
+  </section>
+
+  <!-- ============================================================ CAREER TIMELINE -->
+  <section class="bg-ink py-28 text-paper md:py-40" aria-labelledby="career-title">
+    <div class="mx-auto max-w-[1600px] px-6 md:px-12">
+      <SectionHead id="career-title" index="01" eyebrow="Career" title="The road so far." tone="dark" sample />
+
+      <div data-timeline class="mt-20 grid gap-12 lg:grid-cols-12">
+        <div class="hidden lg:col-span-5 lg:block">
+          <div class="sticky top-[28vh] overflow-hidden">
+            <p data-timeline-year class="font-serif text-display text-paper">{career[0].year}</p>
+          </div>
+        </div>
+
+        <ol class="relative lg:col-span-7">
+          <span class="absolute top-0 bottom-0 left-0 w-px bg-paper/15" aria-hidden="true"></span>
+          <span data-timeline-fill class="absolute top-0 bottom-0 left-0 w-px origin-top bg-accent-soft" aria-hidden="true"></span>
+          {
+            career.map((m) => (
+              <li data-timeline-item data-year={m.year} class="tl-item relative pb-20 pl-8 last:pb-0 md:pl-14">
+                <span class="tl-dot absolute top-2 -left-[5px] size-[11px] rounded-full border border-paper/40 bg-ink" aria-hidden="true" />
+                <p class="font-serif text-5xl leading-none text-accent-soft lg:hidden">{m.year}</p>
+                <p class="mt-4 text-micro font-medium uppercase text-muted-dark lg:mt-0">{m.org}</p>
+                <h3 class="mt-3 font-serif text-4xl leading-[1.05] tracking-tight md:text-5xl">{m.title}</h3>
+                <p class="mt-4 max-w-lg leading-relaxed text-paper/70">{m.text}</p>
+                {m.photo && (
+                  <div class="mt-8 aspect-[16/10] max-w-xl overflow-hidden rounded-md">
+                    <img
+                      src={unsplash(m.photo, 1100, 0.625)}
+                      srcset={srcset(m.photo, 0.625, [480, 768, 1100])}
+                      sizes="(min-width: 1024px) 40vw, 90vw"
+                      alt=""
+                      loading="lazy"
+                      class="size-full object-cover"
+                    />
+                  </div>
+                )}
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ AWARDS -->
+  <section id="awards" class="mx-auto max-w-[1600px] scroll-mt-24 px-6 py-28 md:px-12 md:py-40" aria-labelledby="awards-title">
+    <SectionHead id="awards-title" index="02" eyebrow="Recognition" title="Awards." sample />
+    <ul data-reveal-group class="mt-16 grid grid-cols-2 gap-x-4 gap-y-12 md:grid-cols-3 md:gap-x-6">
+      {
+        awards.map((a, i) => (
+          <li>
+            <button type="button" class="group block w-full text-left" data-award={i}>
+              <span class="block overflow-hidden rounded-md">
+                <Placeholder
+                  label="Award photo"
+                  icon="award"
+                  class="aspect-[4/5] transition-transform duration-1000 ease-out-expo group-hover:scale-[1.03]"
+                />
+              </span>
+              <span class="mt-4 flex items-baseline justify-between gap-4 border-t border-ink/10 pt-3">
+                <span class="text-sm font-medium md:text-base">{a.title}</span>
+                <span class="font-serif text-2xl leading-none md:text-3xl">{a.year}</span>
+              </span>
+              <span class="mt-1 block text-sm text-muted">{a.issuer}</span>
+            </button>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <!-- ============================================================ LICENSE -->
+  <section class="mx-auto max-w-[1600px] px-6 pb-32 md:px-12 md:pb-44">
+    <div data-reveal class="grid gap-8 rounded-lg bg-paper-2 p-8 md:grid-cols-12 md:items-center md:p-12">
+      <div class="md:col-span-7">
+        <p class="text-micro font-medium uppercase text-muted">License</p>
+        <p class="mt-4 font-serif text-4xl leading-tight md:text-5xl">{site.dre.value}</p>
+        <p class="mt-2 text-muted">Licensed by the California Department of Real Estate · {site.brokerage.value}</p>
+      </div>
+      <div class="md:col-span-5 md:text-right">
+        <Button href="https://www2.dre.ca.gov/publicasp/pplinfo.asp" variant="outline-dark" external>Verify on the DRE website</Button>
+      </div>
+    </div>
+  </section>
+
+  <dialog data-lightbox class="lightbox m-auto w-[min(92vw,640px)] bg-transparent p-0 text-paper backdrop:bg-ink/85 backdrop:backdrop-blur-sm">
+    <div data-lightbox-body></div>
+    <div class="mt-4 flex items-start justify-between gap-6">
+      <div>
+        <p data-lightbox-title class="font-serif text-3xl"></p>
+        <p data-lightbox-meta class="mt-1 text-sm text-paper/70"></p>
+      </div>
+      <button type="button" data-lightbox-close class="rounded-full border border-paper/30 px-4 py-2 text-sm">Close</button>
+    </div>
+  </dialog>
+</Base>
+
+<style>
+  @media (min-width: 1024px) {
+    .tl-item {
+      opacity: 0.35;
+      transition: opacity 0.6s var(--ease-out-expo);
+    }
+    .tl-item:global(.is-active) {
+      opacity: 1;
+    }
+  }
+  .tl-item:global(.is-active) .tl-dot {
+    background: var(--color-accent-soft);
+    border-color: var(--color-accent-soft);
+  }
+  .lightbox[open] {
+    animation: lb-in 0.6s var(--ease-out-expo);
+  }
+  @keyframes lb-in {
+    from {
+      opacity: 0;
+      transform: translateY(24px) scale(0.98);
+    }
+  }
+</style>
+
+<script>
+  import { awards } from '../data/content';
+
+  const dlg = document.querySelector<HTMLDialogElement>('[data-lightbox]')!;
+  const body = dlg.querySelector<HTMLElement>('[data-lightbox-body]')!;
+  const title = dlg.querySelector<HTMLElement>('[data-lightbox-title]')!;
+  const meta = dlg.querySelector<HTMLElement>('[data-lightbox-meta]')!;
+
+  document.querySelectorAll<HTMLButtonElement>('[data-award]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const a = awards[Number(btn.dataset.award)];
+      const frame = btn.querySelector('.hatch')!.cloneNode(true) as HTMLElement;
+      frame.classList.add('rounded-md');
+      body.replaceChildren(frame);
+      title.textContent = `${a.title} · ${a.year}`;
+      meta.textContent = a.issuer;
+      (window as any).__lenis?.stop();
+      dlg.showModal();
+    });
+  });
+  const close = () => dlg.close();
+  dlg.querySelector('[data-lightbox-close]')!.addEventListener('click', close);
+  dlg.addEventListener('click', (e) => {
+    if (e.target === dlg) close();
+  });
+  dlg.addEventListener('close', () => (window as any).__lenis?.start());
+</script>

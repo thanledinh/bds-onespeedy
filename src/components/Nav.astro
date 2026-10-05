@@ -1,0 +1,154 @@
+---
+import { site, nav } from '../config/site';
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isActive = (href: string) => path === href || path.startsWith(href + '/');
+---
+
+<div data-nav class="nav fixed inset-x-0 top-0 z-50 px-3 pt-3 md:px-6 md:pt-5">
+  <nav
+    aria-label="Main"
+    class="mx-auto flex max-w-[1400px] items-center justify-between gap-4 rounded-full bg-ink/70 py-1.5 pr-1.5 pl-2 text-paper backdrop-blur-xl"
+  >
+    <a href="/" class="flex items-center gap-3 rounded-full pr-3" aria-label={`${site.name.value}, home`}>
+      <span class="grid size-9 place-items-center rounded-full bg-paper font-serif text-lg leading-none text-ink">{site.initials}</span>
+      <span class="hidden text-sm font-medium tracking-tight sm:inline">{site.name.value}</span>
+    </a>
+
+    <ul class="hidden items-center gap-1 lg:flex">
+      {
+        nav.slice(0, 4).map((item) => (
+          <li>
+            <a
+              href={item.href}
+              class:list={[
+                'rounded-full px-4 py-2 text-sm transition-colors duration-300',
+                isActive(item.href) ? 'bg-paper/15 text-paper' : 'text-paper/70 hover:text-paper',
+              ]}
+              aria-current={isActive(item.href) ? 'page' : undefined}
+            >
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="flex items-center gap-1.5">
+      <a
+        href="/contact"
+        class="hidden rounded-full bg-paper px-5 py-2.5 text-sm font-medium text-ink transition-colors duration-300 hover:bg-white sm:inline-block"
+      >
+        Let’s talk
+      </a>
+      <button
+        type="button"
+        data-menu-btn
+        aria-expanded="false"
+        aria-controls="site-menu"
+        class="grid size-9 place-items-center rounded-full bg-paper/12 lg:hidden"
+      >
+        <span class="sr-only">Menu</span>
+        <span class="menu-icon" aria-hidden="true"><i></i><i></i></span>
+      </button>
+    </div>
+  </nav>
+</div>
+
+<div id="site-menu" data-menu class="site-menu fixed inset-0 z-40 flex flex-col justify-between bg-ink px-6 pt-28 pb-10 text-paper lg:hidden">
+  <ul class="space-y-1">
+    {
+      [{ label: 'Home', href: '/' }, ...nav].map((item, i) => (
+        <li class="overflow-hidden">
+          <a
+            href={item.href}
+            class="menu-link block font-serif text-6xl leading-[1.05] tracking-tight"
+            style={`--i:${i}`}
+            aria-current={isActive(item.href) ? 'page' : undefined}
+          >
+            {item.label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+  <div class="menu-foot space-y-1 text-sm text-paper/60">
+    <p><a href={`tel:${site.phone.value.replace(/[^\d+]/g, '')}`}>{site.phone.value}</a></p>
+    <p><a href={`mailto:${site.email.value}`}>{site.email.value}</a></p>
+    <p>{site.dre.value}</p>
+  </div>
+</div>
+
+<style>
+  .nav {
+    transition: transform 0.6s var(--ease-out-expo);
+  }
+  :global(.nav-hidden) {
+    transform: translateY(-140%);
+  }
+  .menu-icon {
+    position: relative;
+    display: block;
+    width: 16px;
+    height: 8px;
+  }
+  .menu-icon i {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 1.5px;
+    background: currentColor;
+    transition: transform 0.5s var(--ease-out-expo), top 0.5s var(--ease-out-expo);
+  }
+  .menu-icon i:first-child {
+    top: 0;
+  }
+  .menu-icon i:last-child {
+    top: 6.5px;
+  }
+  :global(.menu-open) .menu-icon i:first-child {
+    top: 3.25px;
+    transform: rotate(45deg);
+  }
+  :global(.menu-open) .menu-icon i:last-child {
+    top: 3.25px;
+    transform: rotate(-45deg);
+  }
+  .site-menu {
+    visibility: hidden;
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path 0.8s var(--ease-out-expo), visibility 0s linear 0.8s;
+  }
+  :global(.menu-open) .site-menu {
+    visibility: visible;
+    clip-path: inset(0 0 0 0);
+    transition: clip-path 0.8s var(--ease-out-expo), visibility 0s;
+  }
+  .menu-link {
+    transform: translateY(110%);
+    transition: transform 0.9s var(--ease-out-expo);
+  }
+  :global(.menu-open) .menu-link {
+    transform: none;
+    transition-delay: calc(0.15s + var(--i) * 0.05s);
+  }
+  .menu-link[aria-current='page'] {
+    font-style: italic;
+    color: var(--color-accent-soft);
+  }
+</style>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('[data-menu-btn]');
+  const root = document.documentElement;
+  const setOpen = (open: boolean) => {
+    root.classList.toggle('menu-open', open);
+    btn?.setAttribute('aria-expanded', String(open));
+    const lenis = (window as any).__lenis;
+    if (lenis) open ? lenis.stop() : lenis.start();
+  };
+  btn?.addEventListener('click', () => setOpen(!root.classList.contains('menu-open')));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') setOpen(false);
+  });
+  window.addEventListener('pageshow', () => setOpen(false));
+</script>

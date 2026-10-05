@@ -1,0 +1,47 @@
+---
+/** Frame shown where a real photo from Thang will go (portrait, award photos...). */
+interface Props {
+  label: string;
+  icon?: 'portrait' | 'award' | 'photo';
+  tone?: 'light' | 'dark';
+  class?: string;
+}
+const { label, icon = 'photo', tone = 'light', class: cls = '' } = Astro.props;
+---
+
+<div
+  class:list={[
+    'hatch relative grid place-items-center overflow-hidden',
+    tone === 'dark' ? 'bg-ink-2 text-paper/55' : 'bg-paper-2 text-muted',
+    cls,
+  ]}
+>
+  <div class="flex flex-col items-center gap-3 px-6 text-center">
+    {
+      icon === 'portrait' && (
+        <svg class="size-10" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.2">
+          <circle cx="20" cy="15" r="6.5" />
+          <path d="M7.5 34c1.8-6.4 6.6-9.5 12.5-9.5S30.7 27.6 32.5 34" />
+        </svg>
+      )
+    }
+    {
+      icon === 'award' && (
+        <svg class="size-10" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.2">
+          <circle cx="20" cy="15" r="9" />
+          <path d="m14.5 22.5-3 12 8.5-4 8.5 4-3-12" />
+        </svg>
+      )
+    }
+    {
+      icon === 'photo' && (
+        <svg class="size-10" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.2">
+          <rect x="6" y="9" width="28" height="22" rx="2" />
+          <circle cx="15" cy="17" r="2.5" />
+          <path d="m6 27 8-7 6 5 5-4 9 7" />
+        </svg>
+      )
+    }
+    <span class="text-micro font-medium uppercase">{label}</span>
+  </div>
+</div>

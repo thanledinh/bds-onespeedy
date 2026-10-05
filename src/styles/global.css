@@ -1,0 +1,191 @@
+@import "tailwindcss";
+@import "lenis/dist/lenis.css";
+
+/*
+  Design tokens. Tailwind's default palette, fonts and radii are removed on purpose:
+  components may only use the tokens below so the whole site can be re-themed here.
+*/
+@theme {
+  --color-*: initial;
+  --color-ink: #0f0f0d;
+  --color-ink-2: #1b1a17;
+  --color-paper: #f2efe9;
+  --color-paper-2: #e7e2d8;
+  --color-muted: #6a665e;
+  --color-muted-dark: #a9a398;
+  --color-accent: #85602f;
+  --color-accent-soft: #c9a273;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  --font-*: initial;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Instrument Serif", ui-serif, Georgia, serif;
+
+  --text-micro: 0.6875rem;
+  --text-micro--line-height: 1.2;
+  --text-micro--letter-spacing: 0.14em;
+
+  --text-lead: clamp(1.625rem, 3.4vw, 3.25rem);
+  --text-lead--line-height: 1.12;
+  --text-lead--letter-spacing: -0.025em;
+
+  /* Stat numbers: sized so "$188M" fits a 4-column row at any width. */
+  --text-stat: clamp(2.25rem, 5.3vw, 6rem);
+  --text-stat--line-height: 1;
+  --text-stat--letter-spacing: -0.04em;
+
+  --text-stat-sm: clamp(2.25rem, 3.6vw, 3.75rem);
+  --text-stat-sm--line-height: 1;
+  --text-stat-sm--letter-spacing: -0.035em;
+
+  --text-title: clamp(2.25rem, 5vw, 4.75rem);
+  --text-title--line-height: 1;
+  --text-title--letter-spacing: -0.035em;
+
+  --text-mega: clamp(3.25rem, 9.5vw, 10rem);
+  --text-mega--line-height: 0.9;
+  --text-mega--letter-spacing: -0.045em;
+
+  --text-display: clamp(4.25rem, 16.5vw, 17.5rem);
+  --text-display--line-height: 0.82;
+  --text-display--letter-spacing: -0.055em;
+
+  --radius-*: initial;
+  --radius-sm: 6px;
+  --radius-md: 14px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-marquee: marquee 55s linear infinite;
+  @keyframes marquee {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+}
+
+@layer base {
+  html {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    -webkit-text-size-adjust: 100%;
+    overflow-x: clip;
+  }
+  body {
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  ::selection {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent-soft);
+    outline-offset: 3px;
+  }
+  select {
+    appearance: none;
+  }
+}
+
+@layer components {
+  /* Masked line used by split-text reveals: children slide up from below the mask. */
+  .mask {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-bottom: 0.06em;
+    margin-bottom: -0.06em;
+  }
+  .mask > * {
+    display: inline-block;
+    will-change: transform;
+  }
+
+  /* Rolling-digit numbers (see scripts/motion.ts → odometers). */
+  .odo-col {
+    display: inline-block;
+    height: 1em;
+    overflow: hidden;
+    vertical-align: top;
+  }
+  .odo-inner {
+    display: flex;
+    flex-direction: column;
+  }
+  .odo-inner > span {
+    display: block;
+    height: 1em;
+    line-height: 1;
+    text-align: center;
+  }
+
+  /* Diagonal hatch for "photo goes here" placeholders. */
+  .hatch {
+    background-image: repeating-linear-gradient(
+      135deg,
+      color-mix(in oklab, currentColor 9%, transparent) 0 1px,
+      transparent 1px 11px
+    );
+  }
+
+  /* Prose for blog articles. */
+  .prose-article > * + * {
+    margin-top: 1.25em;
+  }
+  .prose-article h2 {
+    font-family: var(--font-serif);
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin-top: 1.8em;
+  }
+  .prose-article p,
+  .prose-article li {
+    font-size: 1.125rem;
+    line-height: 1.75;
+    color: color-mix(in oklab, var(--color-ink) 82%, transparent);
+  }
+  .prose-article ul {
+    list-style: none;
+    padding: 0;
+  }
+  .prose-article li {
+    position: relative;
+    padding-left: 1.5em;
+  }
+  .prose-article li + li {
+    margin-top: 0.5em;
+  }
+  .prose-article li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.85em;
+    width: 0.75em;
+    height: 1px;
+    background: var(--color-accent);
+  }
+  .prose-article blockquote {
+    font-family: var(--font-serif);
+    font-size: clamp(1.75rem, 3.2vw, 2.75rem);
+    line-height: 1.15;
+    border-left: 1px solid var(--color-accent);
+    padding-left: 1.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

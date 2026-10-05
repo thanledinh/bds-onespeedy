@@ -1,0 +1,26 @@
+---
+import SampleTag from './SampleTag.astro';
+interface Props {
+  id?: string;
+  index?: string;
+  eyebrow: string;
+  title: string;
+  tone?: 'light' | 'dark';
+  sample?: boolean;
+  class?: string;
+}
+const { id, index, eyebrow, title, tone = 'light', sample = false, class: cls = '' } = Astro.props;
+const dark = tone === 'dark';
+---
+
+<header class:list={['flex flex-col gap-8 md:flex-row md:items-end md:justify-between', cls]}>
+  <div class="max-w-4xl">
+    <p class:list={['flex flex-wrap items-center gap-3 text-micro font-medium uppercase', dark ? 'text-muted-dark' : 'text-muted']}>
+      {index && <span class={dark ? 'text-accent-soft' : 'text-accent'}>({index})</span>}
+      <span>{eyebrow}</span>
+      {sample && <SampleTag tone={dark ? 'dark' : 'light'} />}
+    </p>
+    <h2 id={id} data-split class="mt-5 font-serif text-title">{title}</h2>
+  </div>
+  <slot />
+</header>

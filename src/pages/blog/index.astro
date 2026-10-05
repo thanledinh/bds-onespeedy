@@ -1,0 +1,73 @@
+---
+import Base from '../../layouts/Base.astro';
+import SampleTag from '../../components/SampleTag.astro';
+import { posts } from '../../data/content';
+import { unsplash, srcset, longDate } from '../../lib/img';
+
+const [featured, ...rest] = posts;
+---
+
+<Base title="Journal" description="Articles from Thang Truong on buying, selling and the Bay Area housing market.">
+  <section class="mx-auto max-w-[1600px] px-6 pt-36 pb-16 md:px-12 md:pt-48 md:pb-20">
+    <p class="flex items-center gap-3 text-micro font-medium uppercase text-muted">
+      <span class="text-accent">Journal</span>
+      <SampleTag />
+    </p>
+    <h1 data-split class="mt-6 text-mega font-medium">Notes &amp; guides</h1>
+    <p data-reveal class="mt-12 max-w-xl border-t border-ink/10 pt-8 text-lg leading-relaxed text-muted">
+      Practical articles on buying, selling and the local market. Thang writes and publishes these from a simple editor, no developer needed.
+    </p>
+  </section>
+
+  <section class="mx-auto max-w-[1600px] px-6 pb-32 md:px-12 md:pb-44" aria-label="Articles">
+    <a href={`/blog/${featured.slug}`} class="group grid gap-8 md:grid-cols-12 md:items-end" data-reveal>
+      <div class="aspect-[4/3] overflow-hidden rounded-lg md:col-span-7 md:aspect-[16/11]">
+        <img
+          src={unsplash(featured.cover, 1400, 0.6875)}
+          srcset={srcset(featured.cover, 0.6875)}
+          sizes="(min-width: 768px) 58vw, 90vw"
+          alt=""
+          class="size-full object-cover transition-transform duration-1000 ease-out-expo group-hover:scale-[1.03]"
+        />
+      </div>
+      <div class="md:col-span-5 md:pb-4">
+        <p class="flex items-center gap-3 text-micro font-medium uppercase text-muted">
+          <span class="text-accent">{featured.tag}</span>
+          <span>{longDate(featured.date)}</span>
+          <span>{featured.minutes} min read</span>
+        </p>
+        <h2 class="mt-4 font-serif text-title decoration-1 underline-offset-[6px] group-hover:underline">{featured.title}</h2>
+        <p class="mt-5 max-w-md text-lg leading-relaxed text-muted">{featured.excerpt}</p>
+      </div>
+    </a>
+
+    <ul data-reveal-group class="mt-24 grid gap-x-6 gap-y-14 border-t border-ink/10 pt-14 md:grid-cols-3">
+      {
+        rest.map((p) => (
+          <li>
+            <a href={`/blog/${p.slug}`} class="group block">
+              <div class="aspect-[4/3] overflow-hidden rounded-md bg-paper-2">
+                <img
+                  src={unsplash(p.cover, 900, 0.75)}
+                  srcset={srcset(p.cover, 0.75, [480, 768, 1100])}
+                  sizes="(min-width: 768px) 32vw, 90vw"
+                  alt=""
+                  loading="lazy"
+                  class="size-full object-cover transition-transform duration-1000 ease-out-expo group-hover:scale-[1.045]"
+                />
+              </div>
+              <p class="mt-5 flex items-center gap-3 text-micro font-medium uppercase text-muted">
+                <span class="text-accent">{p.tag}</span>
+                <span>{longDate(p.date)}</span>
+              </p>
+              <h3 class="mt-3 font-serif text-3xl leading-[1.05] tracking-tight decoration-1 underline-offset-4 group-hover:underline">
+                {p.title}
+              </h3>
+              <p class="mt-3 text-sm leading-relaxed text-muted">{p.excerpt}</p>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</Base>

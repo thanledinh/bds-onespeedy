@@ -1,0 +1,75 @@
+---
+import Button from './Button.astro';
+import { site, nav } from '../config/site';
+const tel = site.phone.value.replace(/[^\d+]/g, '');
+const wordmark = site.name.value;
+---
+
+<div data-footer-wrap class="footer-wrap relative">
+  <footer data-footer class="bg-ink text-paper">
+    <div class="mx-auto max-w-[1600px] px-6 pt-20 md:px-12 md:pt-28">
+      <div class="grid gap-14 lg:grid-cols-12">
+        <div class="lg:col-span-6">
+          <p class="text-micro font-medium uppercase text-muted-dark">Thinking of buying or selling?</p>
+          <p class="mt-5 font-serif text-mega italic">Let’s talk.</p>
+          <div class="mt-9 flex flex-wrap gap-3">
+            <Button href="/contact" variant="light">Send a message</Button>
+            <Button href={`tel:${tel}`} variant="outline-light">{site.phone.value}</Button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-10 text-sm sm:grid-cols-3 lg:col-span-6 lg:pt-3">
+          <div>
+            <p class="text-micro font-medium uppercase text-muted-dark">Explore</p>
+            <ul class="mt-5 space-y-2.5">
+              {nav.map((item) => <li><a class="text-paper/80 transition-colors hover:text-paper" href={item.href}>{item.label}</a></li>)}
+            </ul>
+          </div>
+          <div>
+            <p class="text-micro font-medium uppercase text-muted-dark">Contact</p>
+            <ul class="mt-5 space-y-2.5 text-paper/80">
+              <li><a class="hover:text-paper" href={`tel:${tel}`}>{site.phone.value}</a></li>
+              <li><a class="break-all hover:text-paper" href={`mailto:${site.email.value}`}>{site.email.value}</a></li>
+              <li>{site.area}</li>
+            </ul>
+          </div>
+          <div>
+            <p class="text-micro font-medium uppercase text-muted-dark">Follow</p>
+            <ul class="mt-5 space-y-2.5 text-paper/80">
+              <li><a class="hover:text-paper" href={site.youtube.value} target="_blank" rel="noopener">YouTube ↗</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-16 flex flex-col gap-3 border-t border-paper/15 pt-6 text-xs text-muted-dark md:flex-row md:items-center md:justify-between">
+        <p>{site.name.value} · {site.dre.value} · {site.brokerage.value}</p>
+        <p class="flex items-center gap-2">
+          <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M9 14h6M9 17h6"/></svg>
+          Equal Housing Opportunity
+        </p>
+        <p>© {new Date().getFullYear()} {site.name.value}</p>
+      </div>
+    </div>
+
+    <p data-wordmark aria-hidden="true" class="wordmark mt-8 overflow-hidden px-3 text-center font-semibold whitespace-nowrap md:px-6">
+      {wordmark.split('').map((c) => (c === ' ' ? <span class="inline-block w-[0.22em]" /> : <span class="wm-letter inline-block">{c}</span>))}
+    </p>
+  </footer>
+</div>
+
+<style>
+  .wordmark {
+    font-size: 14.6vw;
+    line-height: 0.8;
+    letter-spacing: -0.06em;
+    padding-bottom: 0.16em;
+  }
+  .footer-wrap.is-curtain {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+  .footer-wrap.is-curtain > footer {
+    position: fixed;
+    inset: auto 0 0 0;
+  }
+</style>

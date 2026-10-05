@@ -1,0 +1,288 @@
+---
+import Base from '../layouts/Base.astro';
+import Button from '../components/Button.astro';
+import SectionHead from '../components/SectionHead.astro';
+import SoldCard from '../components/SoldCard.astro';
+import SampleTag from '../components/SampleTag.astro';
+import Placeholder from '../components/Placeholder.astro';
+import { site } from '../config/site';
+import { videos, photos } from '../data/media';
+import { soldHomes, soldStats } from '../data/sold';
+import { posts, videoList, awards } from '../data/content';
+import { unsplash, srcset, compactMoney, longDate } from '../lib/img';
+
+const recent = soldHomes.slice(0, 8);
+const stats = [
+  { value: String(soldStats.count), label: 'Homes sold' },
+  { value: compactMoney(soldStats.volume), label: 'In sales volume' },
+  { value: `+${soldStats.avgOverList}%`, label: 'Average sale vs. list price' },
+  { value: String(soldStats.cities), label: 'Bay Area cities' },
+];
+const letters = (w: string) => w.split('');
+---
+
+<Base>
+  <!-- ============================================================ HERO -->
+  <section data-hero class="relative h-[260vh] bg-ink text-paper" aria-label="Introduction">
+    <div class="sticky top-0 h-svh overflow-hidden">
+      <div data-hero-media class="absolute inset-0 overflow-hidden" style="clip-path: inset(15% 23% 15% 23% round 28px)">
+        <video
+          data-hero-video
+          class="size-full object-cover"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto"
+          aria-hidden="true"
+        >
+          <source media="(min-width: 900px)" src={videos.hero.hd} type="video/mp4" />
+          <source src={videos.hero.sd} type="video/mp4" />
+        </video>
+        <div data-hero-shade class="absolute inset-0 bg-ink opacity-10"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent"></div>
+      </div>
+
+      <h1 class="pointer-events-none absolute inset-0 font-medium" aria-label={site.name.value}>
+        <span
+          data-hero-word
+          data-pre-hide
+          class="mask absolute top-[17vh] left-4 text-display md:top-[9vh] md:left-[3vw]"
+          aria-hidden="true"
+          style="padding-bottom:0.16em;margin-bottom:0"
+        >
+          <span>{letters(site.firstName).map((c) => <span data-hero-letter class="inline-block">{c}</span>)}</span>
+        </span>
+        <span
+          data-hero-word
+          data-pre-hide
+          class="mask absolute right-4 bottom-[15vh] text-display md:right-[3vw] md:bottom-[7vh]"
+          aria-hidden="true"
+          style="padding-bottom:0.16em;margin-bottom:0"
+        >
+          <span>{letters(site.lastName).map((c) => <span data-hero-letter class="inline-block">{c}</span>)}</span>
+        </span>
+      </h1>
+
+      <p data-hero-caption data-pre-hide class="absolute bottom-[6vh] left-4 max-w-[13rem] text-sm leading-snug text-paper/75 md:bottom-[8vh] md:left-[3vw]">
+        {site.role} serving {site.area}.
+      </p>
+      <p data-hero-caption data-pre-hide class="absolute top-[12vh] right-[3vw] hidden items-center gap-2 text-micro font-medium uppercase text-paper/60 md:flex">
+        <span class="inline-block h-px w-8 bg-paper/40"></span> Scroll
+      </p>
+
+      <div data-hero-final class="absolute inset-x-0 bottom-0 px-4 pb-10 md:px-[3vw] md:pb-[7vh]">
+        <div class="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+          <p class="max-w-3xl text-lead font-medium">
+            Buying or selling in the Bay Area, <span class="font-serif font-normal italic">with someone who knows the streets.</span>
+          </p>
+          <div class="flex flex-wrap gap-3">
+            <Button href="/sold" variant="light">View sold homes</Button>
+            <Button href="/contact" variant="outline-light">Let’s talk</Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ APPROACH -->
+  <section class="mx-auto max-w-[1600px] px-6 py-28 md:px-12 md:py-44">
+    <div class="grid gap-10 md:grid-cols-12">
+      <p class="flex items-center gap-3 self-start text-micro font-medium uppercase text-muted md:col-span-3 md:pt-4">
+        <span class="text-accent">(01)</span> Approach
+      </p>
+      <div class="md:col-span-9">
+        <p data-words-scrub class="text-lead font-medium">
+          A home is the biggest purchase most families ever make. My job is to make every step clear, from the first showing to the day you get the keys, and to fight for the best possible outcome, whether you are buying or selling.
+        </p>
+        <div data-reveal class="mt-12 flex flex-wrap items-center gap-6">
+          <Button href="/about">About Thang</Button>
+          <a href="/sold" class="text-sm underline decoration-ink/30 underline-offset-4 transition-colors hover:decoration-ink">See the track record</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ STATS -->
+  <section class="relative overflow-hidden bg-ink text-paper" aria-labelledby="stats-title">
+    <div class="absolute inset-0" aria-hidden="true">
+      <video class="size-full scale-110 object-cover opacity-35 blur-[3px]" autoplay muted loop playsinline preload="metadata" data-parallax="6">
+        <source media="(min-width: 900px)" src={videos.aerial.hd} type="video/mp4" />
+        <source src={videos.aerial.sd} type="video/mp4" />
+      </video>
+      <div class="absolute inset-0 bg-gradient-to-b from-ink via-ink/40 to-ink"></div>
+    </div>
+    <div class="relative mx-auto max-w-[1600px] px-6 py-28 md:px-12 md:py-40">
+      <SectionHead id="stats-title" index="02" eyebrow="Track record" title="The record, in numbers." tone="dark" sample={soldStats.sample} />
+      <dl class="mt-16 grid grid-cols-2 gap-x-6 gap-y-14 border-t border-paper/15 pt-10 lg:grid-cols-4">
+        {
+          stats.map((s) => (
+            <div class="flex flex-col-reverse gap-4">
+              <dt class="text-sm text-muted-dark">{s.label}</dt>
+              <dd class="text-stat font-medium whitespace-nowrap" data-count={s.value}>{s.value}</dd>
+            </div>
+          ))
+        }
+      </dl>
+      <p class="mt-14 max-w-md text-xs text-muted-dark">
+        Calculated automatically from the sold-homes list. This demo uses sample data; the live site uses Thang’s MLS records.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================ RECENTLY SOLD (horizontal rail) -->
+  <section data-hrail class="relative bg-paper lg:flex lg:h-svh lg:flex-col lg:justify-center" aria-labelledby="recent-title">
+    <div class="mx-auto w-full max-w-[1600px] px-6 pt-28 md:px-12 lg:pt-24">
+      <SectionHead id="recent-title" index="03" eyebrow="Recently sold" title="Every home, every street." sample>
+        <Button href="/sold" variant="outline-dark">All {soldStats.count} homes</Button>
+      </SectionHead>
+    </div>
+    <div class="relative mt-12 overflow-x-auto pb-6 [scrollbar-width:none] lg:overflow-visible lg:pb-0">
+      <div data-hrail-track class="flex w-max gap-6 px-6 md:px-12">
+        {recent.map((home) => <SoldCard home={home} class="w-[78vw] sm:w-[44vw] lg:w-[29vw] xl:w-[25vw]" />)}
+        <a
+          href="/sold"
+          class="group flex w-[78vw] flex-col justify-between rounded-md bg-ink p-8 text-paper sm:w-[44vw] lg:w-[29vw] xl:w-[25vw]"
+        >
+          <span class="text-micro font-medium uppercase text-muted-dark">Full list</span>
+          <span class="font-serif text-title">
+            See all {soldStats.count} sold homes
+            <span class="inline-block transition-transform duration-500 group-hover:translate-x-2">→</span>
+          </span>
+        </a>
+      </div>
+    </div>
+    <div class="mx-auto mt-10 hidden w-full max-w-[1600px] px-12 lg:block">
+      <div class="h-px w-full bg-ink/10"><div data-hrail-bar class="h-px origin-left bg-ink"></div></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ MEET THANG -->
+  <section class="bg-paper-2 px-6 py-28 md:px-12 md:py-40" aria-labelledby="meet-title">
+    <div class="relative mx-auto max-w-[1600px]">
+      <div class="relative aspect-[4/5] overflow-hidden rounded-lg sm:aspect-[16/10] lg:aspect-[16/8]">
+        <img
+          data-parallax="8"
+          src={unsplash(photos.livingWarm, 2000)}
+          srcset={srcset(photos.livingWarm)}
+          sizes="100vw"
+          alt="Bright living room with large windows"
+          loading="lazy"
+          class="absolute inset-0 size-full scale-[1.18] object-cover"
+        />
+      </div>
+      <div
+        data-rise
+        class="relative z-10 mx-3 -mt-28 rounded-lg border border-white/50 bg-paper/75 p-8 shadow-2xl shadow-ink/10 backdrop-blur-2xl sm:mx-auto sm:max-w-lg md:absolute md:right-10 md:-bottom-14 md:mx-0 md:p-10"
+      >
+        <p class="flex items-center gap-3 text-micro font-medium uppercase text-muted">
+          <span class="text-accent">(04)</span> Meet Thang <SampleTag />
+        </p>
+        <h2 id="meet-title" class="mt-5 font-serif text-5xl leading-[0.95] tracking-tight">Local, direct, and on your side.</h2>
+        <p class="mt-5 text-muted">
+          A short introduction goes here: where Thang grew up, why real estate, and what clients can expect when they work together.
+        </p>
+        <div class="mt-8">
+          <Button href="/about">Read the story</Button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ VIDEOS -->
+  <section class="bg-ink pt-28 pb-28 text-paper md:pt-40 md:pb-40" aria-labelledby="videos-title">
+    <div class="mx-auto max-w-[1600px] px-6 md:px-12">
+      <SectionHead id="videos-title" index="05" eyebrow="On YouTube" title="Short videos, straight answers." tone="dark" sample>
+        <Button href="/videos" variant="outline-light">All videos</Button>
+      </SectionHead>
+    </div>
+    <div class="relative mt-14 overflow-x-auto [scrollbar-width:none] md:overflow-visible">
+      <ul data-reveal-group class="mx-auto flex w-max gap-4 px-6 md:grid md:w-auto md:max-w-[1600px] md:grid-cols-4 md:gap-6 md:px-12">
+        {
+          videoList.slice(0, 4).map((v, i) => (
+            <li class:list={['w-[62vw] sm:w-[40vw] md:w-auto', i % 2 === 1 && 'md:mt-20']}>
+              <a href="/videos" class="group block">
+                <div class="relative aspect-[9/16] overflow-hidden rounded-md bg-ink-2">
+                  <img
+                    src={unsplash(v.thumb, 700, 16 / 9)}
+                    alt=""
+                    loading="lazy"
+                    class="size-full object-cover opacity-80 transition duration-1000 ease-out-expo group-hover:scale-105 group-hover:opacity-100"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-transparent to-ink/20" />
+                  <span class="absolute top-3 left-3 rounded-full bg-ink/50 px-2.5 py-1 text-micro font-medium text-paper backdrop-blur">
+                    {v.minutes}
+                  </span>
+                  <span class="absolute top-1/2 left-1/2 grid size-14 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-paper/90 text-ink transition-transform duration-500 ease-out-expo group-hover:scale-110">
+                    <svg class="ml-0.5 size-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11l9-5.5z" /></svg>
+                  </span>
+                  <p class="absolute inset-x-4 bottom-4 text-base leading-snug font-medium">{v.title}</p>
+                </div>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================================ AWARDS -->
+  <section class="overflow-hidden bg-paper py-28 md:py-40" aria-labelledby="awards-title">
+    <div class="mx-auto max-w-[1600px] px-6 md:px-12">
+      <SectionHead id="awards-title" index="06" eyebrow="Recognition" title="Awards and milestones." sample>
+        <Button href="/about#awards" variant="outline-dark">See all awards</Button>
+      </SectionHead>
+    </div>
+    <div class="group/marquee mt-16 flex">
+      <ul class="flex shrink-0 animate-marquee gap-6 pr-6 group-hover/marquee:[animation-play-state:paused] motion-reduce:animate-none">
+        {
+          [...awards, ...awards].map((a, i) => (
+            <li class="w-64 shrink-0 md:w-72" aria-hidden={i >= awards.length ? 'true' : undefined}>
+              <Placeholder label="Award photo" icon="award" class="aspect-[4/5] rounded-md" />
+              <div class="mt-4 flex items-baseline justify-between gap-4 border-t border-ink/10 pt-3">
+                <p class="text-sm font-medium">{a.title}</p>
+                <p class="font-serif text-2xl leading-none">{a.year}</p>
+              </div>
+              <p class="mt-1 text-sm text-muted">{a.issuer}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================================ JOURNAL -->
+  <section class="mx-auto max-w-[1600px] px-6 pb-32 md:px-12 md:pb-44" aria-labelledby="journal-title">
+    <SectionHead id="journal-title" index="07" eyebrow="Journal" title="Notes on buying, selling and the market." sample>
+      <Button href="/blog" variant="outline-dark">All articles</Button>
+    </SectionHead>
+    <ul data-reveal-group class="mt-16 grid gap-x-6 gap-y-14 md:grid-cols-3">
+      {
+        posts.slice(0, 3).map((p) => (
+          <li>
+            <a href={`/blog/${p.slug}`} class="group block">
+              <div class="aspect-[4/3] overflow-hidden rounded-md bg-paper-2">
+                <img
+                  src={unsplash(p.cover, 900, 0.75)}
+                  srcset={srcset(p.cover, 0.75, [480, 768, 1100])}
+                  sizes="(min-width: 768px) 32vw, 90vw"
+                  alt=""
+                  loading="lazy"
+                  class="size-full object-cover transition-transform duration-1000 ease-out-expo group-hover:scale-[1.045]"
+                />
+              </div>
+              <p class="mt-5 flex items-center gap-3 text-micro font-medium uppercase text-muted">
+                <span class="text-accent">{p.tag}</span>
+                <span>{longDate(p.date)}</span>
+              </p>
+              <h3 class="mt-3 font-serif text-3xl leading-[1.05] tracking-tight decoration-1 underline-offset-4 group-hover:underline">
+                {p.title}
+              </h3>
+              <p class="mt-3 text-sm leading-relaxed text-muted">{p.excerpt}</p>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</Base>

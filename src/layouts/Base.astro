@@ -1,0 +1,86 @@
+---
+import '@fontsource-variable/inter';
+import '@fontsource/instrument-serif/400.css';
+import '@fontsource/instrument-serif/400-italic.css';
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { site, assertNoPlaceholders } from '../config/site';
+
+assertNoPlaceholders();
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+const { title, description = site.seo.description } = Astro.props;
+const fullTitle = title ? `${title} — ${site.name.value}` : site.seo.title;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {site.mode === 'demo' && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="theme-color" content="#0f0f0d" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://images.unsplash.com" />
+    <script is:inline>
+      document.documentElement.classList.add('js');
+      // Fail-safe: if the motion script never runs, show everything.
+      setTimeout(function () {
+        if (!window.__motion) document.documentElement.classList.remove('js');
+      }, 2500);
+    </script>
+    <style is:global>
+      .js [data-split],
+      .js [data-pre-hide] {
+        visibility: hidden;
+      }
+      .curtain {
+        animation: curtain-out 1s cubic-bezier(0.76, 0, 0.24, 1) 0.15s forwards;
+      }
+      @keyframes curtain-out {
+        to {
+          transform: translateY(-100%);
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-paper text-ink">
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:rounded-full focus:bg-paper focus:px-4 focus:py-2">
+      Skip to content
+    </a>
+
+    <Nav />
+
+    <main id="main" class="relative z-10 bg-paper">
+      <slot />
+    </main>
+
+    <Footer />
+
+    {
+      site.mode === 'demo' && (
+        <p class="pointer-events-none fixed bottom-3 left-3 z-40 flex items-center gap-2 rounded-full bg-ink/70 px-3 py-1.5 text-micro font-medium uppercase text-paper backdrop-blur-md">
+          <span class="size-1.5 animate-pulse rounded-full bg-accent-soft" />
+          Demo preview · sample content
+        </p>
+      )
+    }
+
+    <div data-curtain class="curtain pointer-events-none fixed inset-0 z-[150] grid place-items-center bg-ink text-paper" aria-hidden="true">
+      <span class="font-serif text-3xl italic">{site.name.value}</span>
+    </div>
+
+    <script>
+      import '../scripts/motion';
+    </script>
+  </body>
+</html>
