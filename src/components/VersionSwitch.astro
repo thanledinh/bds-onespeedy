@@ -2,7 +2,7 @@
 /** Demo-only switch between the design options. */
 import { site } from '../config/site';
 interface Props {
-  current: 'a' | 'b' | 'c';
+  current: 'a' | 'b' | 'c' | 'd';
   side?: 'right' | 'left';
 }
 const { current, side = 'right' } = Astro.props;
@@ -10,6 +10,7 @@ const options = [
   { id: 'a', label: 'A', href: '/' },
   { id: 'b', label: 'B', href: '/v2' },
   { id: 'c', label: 'C', href: '/v3' },
+  { id: 'd', label: 'D', href: '/v4' },
 ];
 ---
 

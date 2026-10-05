@@ -1,0 +1,107 @@
+---
+import '@fontsource/cormorant-garamond/300.css';
+import '@fontsource/cormorant-garamond/400.css';
+import '@fontsource/cormorant-garamond/500.css';
+import '@fontsource/cormorant-garamond/300-italic.css';
+import '@fontsource/cormorant-garamond/400-italic.css';
+import '@fontsource-variable/manrope';
+import './styles.css';
+import VersionSwitch from '../components/VersionSwitch.astro';
+import { site, assertNoPlaceholders } from '../config/site';
+
+assertNoPlaceholders();
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+const { title, description = site.seo.description } = Astro.props;
+const fullTitle = title ? `${title} — ${site.name.value}` : site.seo.title;
+const tel = site.phone.value.replace(/[^\d+]/g, '');
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {site.mode === 'demo' && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="theme-color" content="#07080b" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <script is:inline>
+      document.documentElement.classList.add('js');
+      setTimeout(function () {
+        if (!window.__motion) document.documentElement.classList.remove('js');
+      }, 2500);
+    </script>
+    <style is:global>
+      .js [data-split],
+      .js [data-pre-hide] {
+        visibility: hidden;
+      }
+    </style>
+  </head>
+  <body class="bg-void text-pearl">
+    <header data-nav class="nav fixed inset-x-0 top-0 z-50">
+      <div class="mx-auto flex max-w-[1600px] items-center justify-between gap-6 px-5 py-4 md:px-10 md:py-5">
+        <a href="/v4" class="font-serif text-2xl leading-none text-pearl">
+          {site.name.value}<span class="text-gold">.</span>
+        </a>
+        <nav aria-label="Main" class="hidden items-center gap-8 md:flex">
+          <a href="#tour" class="label text-mist transition-colors hover:text-gold-light">360° Tour</a>
+          <a href="#how" class="label text-mist transition-colors hover:text-gold-light">How it works</a>
+          <a href="#showing" class="label text-mist transition-colors hover:text-gold-light">Contact</a>
+        </nav>
+        <a href="#showing" class="btn btn-line py-2.5! text-xs!">Book a showing</a>
+      </div>
+    </header>
+
+    <main id="main" class="relative">
+      <slot />
+    </main>
+
+    <footer class="border-t border-pearl/10 bg-void">
+      <div class="mx-auto max-w-[1600px] px-5 py-16 md:px-10 md:py-20">
+        <div class="flex flex-col gap-10 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p class="font-serif text-[clamp(3.5rem,9vw,8rem)] leading-[0.9] font-light">{site.name.value}</p>
+            <p class="mt-4 text-sm text-mist">{site.role} · {site.area}</p>
+          </div>
+          <div class="space-y-2 text-sm text-mist md:text-right">
+            <p><a href={`tel:${tel}`} class="hover:text-gold-light">{site.phone.value}</a></p>
+            <p><a href={`mailto:${site.email.value}`} class="hover:text-gold-light">{site.email.value}</a></p>
+            <p>{site.dre.value} · {site.brokerage.value}</p>
+            <p>Equal Housing Opportunity · © {new Date().getFullYear()}</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <VersionSwitch current="d" />
+
+    <script>
+      import './main';
+    </script>
+  </body>
+</html>
+
+<style>
+  .nav {
+    transition:
+      transform 0.7s var(--ease-out-expo),
+      background 0.5s,
+      backdrop-filter 0.5s;
+  }
+  .nav:global(.is-scrolled) {
+    background: color-mix(in oklab, var(--color-void) 70%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+  .nav:global(.is-hidden) {
+    transform: translateY(-110%);
+  }
+</style>

@@ -1,0 +1,506 @@
+---
+import Layout from '../../v4/Layout.astro';
+import { site } from '../../config/site';
+import { rooms, tourHome } from '../../data/tour';
+import { soldStats } from '../../data/sold';
+import { compactMoney, unsplash } from '../../lib/img';
+import { photos } from '../../data/media';
+
+const demo = site.mode === 'demo';
+const tel = site.phone.value.replace(/[^\d+]/g, '');
+---
+
+<Layout title="Immersive" description="Tour homes in 360° with Thang Truong, real estate agent in San Jose and the Bay Area.">
+  <!-- ============================================================ HERO: architectural model, golden hour → blue hour → step inside -->
+  <section data-hero class="hero relative h-[420vh] bg-void" aria-labelledby="hero-title">
+    <div class="sticky top-0 h-svh overflow-hidden">
+      <div data-backdrop class="backdrop absolute inset-0"></div>
+      <img data-house-fallback src={unsplash(photos.duskModern, 2000)} alt="" class="absolute inset-0 hidden size-full object-cover opacity-60" />
+      <div data-house class="absolute inset-0" aria-hidden="true"></div>
+      <div class="pointer-events-none absolute inset-x-0 bottom-0 h-[55%] bg-gradient-to-t from-void via-void/55 to-transparent"></div>
+      <div data-blackout class="pointer-events-none absolute inset-0 bg-void opacity-0"></div>
+
+      <!-- Intro -->
+      <div data-chapter="intro" class="absolute inset-x-0 bottom-0">
+        <div class="mx-auto max-w-[1600px] px-5 pb-14 md:px-10 md:pb-16">
+          <p data-pre-hide data-hero-fade class="label text-gold">{site.role} · San Jose & the Bay Area</p>
+          <h1 id="hero-title" data-pre-hide data-hero-title class="mt-5 max-w-[11ch] font-serif text-hero font-light">
+            Step inside, <em class="italic">from anywhere.</em>
+          </h1>
+          <div class="mt-8 flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+            <p data-pre-hide data-hero-fade class="max-w-md leading-relaxed text-mist">
+              Tour homes in 360° before you visit. Look around every room, then book a private showing with {site.firstName} when it feels right.
+            </p>
+            <div data-pre-hide data-hero-fade class="flex flex-wrap gap-3">
+              <a href="#tour" class="btn btn-solid">Start the 360° tour</a>
+              <a href="#showing" class="btn btn-line">Book a private showing</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chapters revealed while scrolling -->
+      {
+        [
+          { k: '1', label: 'Golden hour', text: 'Light finds the details: stone, glass and the line of the roof.' },
+          { k: '2', label: 'Blue hour', text: 'Lights on. The moment a house becomes a home.' },
+          { k: '3', label: 'Step inside', text: 'Every room, in 360°. Keep scrolling.' },
+        ].map((c) => (
+          <div data-chapter={c.k} class="chapter pointer-events-none absolute inset-x-0 bottom-0 opacity-0">
+            <div class="mx-auto max-w-[1600px] px-5 pb-16 md:px-10 md:pb-20">
+              <p class="label text-gold">{c.label}</p>
+              <p class="mt-4 max-w-xl font-serif text-[clamp(2.2rem,4.4vw,4.2rem)] leading-[1.02] font-light">{c.text}</p>
+            </div>
+          </div>
+        ))
+      }
+
+      <!-- Time of day + progress -->
+      <div data-clock-wrap data-pre-hide data-hero-fade class="absolute top-24 right-10 hidden text-right md:block">
+        <p class="label text-mist">Time of day</p>
+        <p data-clock class="mt-1 font-serif text-3xl tabular-nums md:text-4xl">5:24 PM</p>
+      </div>
+      <div class="absolute right-5 bottom-6 h-px w-28 bg-pearl/15 md:right-10"><div data-hero-bar class="h-px origin-left scale-x-0 bg-pearl/70"></div></div>
+      <p data-scroll-hint class="label absolute bottom-6 left-1/2 hidden -translate-x-1/2 text-mist md:block">Scroll</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ NUMBERS -->
+  <section class="border-y border-pearl/10" aria-label="Track record">
+    <dl class="mx-auto grid max-w-[1600px] grid-cols-2 md:grid-cols-4">
+      {
+        [
+          { v: String(soldStats.count), l: 'Homes sold' },
+          { v: compactMoney(soldStats.volume), l: 'Sales volume' },
+          { v: `+${soldStats.avgOverList}%`, l: 'Average over list' },
+          { v: String(soldStats.cities), l: 'Bay Area cities' },
+        ].map((s, i) => (
+          <div class:list={['border-pearl/10 px-5 py-10 md:px-10 md:py-14', i % 2 === 0 && 'border-r', i < 2 && 'border-b md:border-b-0', i === 1 && 'md:border-r', i === 2 && 'md:border-r']}>
+            <dd class="font-serif text-stat font-light" data-count-up={s.v}>{s.v}</dd>
+            <dt class="label mt-3 text-mist">{s.l}{demo && i === 3 && <span class="ml-2 text-gold">· Sample</span>}</dt>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <!-- ============================================================ 360° TOUR -->
+  <section id="tour" class="mx-auto max-w-[1600px] px-3 pt-24 pb-10 md:px-10 md:pt-32" aria-labelledby="tour-title">
+    <div class="flex flex-col gap-6 px-2 md:flex-row md:items-end md:justify-between md:px-0">
+      <div>
+        <p class="label text-gold">360° Tour {demo && '· Sample'}</p>
+        <h2 id="tour-title" data-split class="mt-4 font-serif text-title font-light">Walk through <em class="italic">before you visit.</em></h2>
+      </div>
+      <p data-reveal class="max-w-sm leading-relaxed text-mist">Drag to look around. Tap the arrows to move from room to room, or the <span class="font-serif italic text-gold-light">i</span> for details.</p>
+    </div>
+
+    <div data-tour tabindex="0" aria-label="360 degree tour. Drag or use the arrow keys to look around." class="tour-frame relative mt-10 h-[78svh] min-h-[520px] overflow-hidden rounded-lg bg-void-2 md:h-[84svh]">
+      <div data-tour-stage class="absolute inset-0">
+        <div data-tour-hotspots class="pointer-events-none absolute inset-0 [&>*]:pointer-events-auto"></div>
+      </div>
+      <div data-tour-fade class="pointer-events-none absolute inset-0 bg-void opacity-0"></div>
+
+      <!-- Fallback without WebGL -->
+      <img data-tour-fallback src={rooms[0].preview} alt={`${rooms[0].name}, 360° panorama`} class="tour-fallback absolute inset-0 hidden size-full object-cover" />
+
+      <!-- Top bar -->
+      <div class="pointer-events-none absolute inset-x-3 top-3 flex items-start justify-between gap-3 md:inset-x-5 md:top-5">
+        <div class="glass pointer-events-auto rounded-full py-2 pr-4 pl-2">
+          <span class="flex items-center gap-3">
+            <span class="rounded-full bg-gold/15 px-2.5 py-1 font-serif text-sm whitespace-nowrap text-gold" data-tour-index>01 / 05</span>
+            <span class="font-serif text-xl leading-none whitespace-nowrap" data-tour-room>{rooms[0].name}</span>
+          </span>
+        </div>
+        <div class="pointer-events-auto flex gap-1.5">
+          <span data-tour-hd class="tour-hd glass hidden items-center gap-2 rounded-full px-3 text-xs text-mist md:flex"><span class="tour-spin"></span>HD</span>
+          <button type="button" data-tour-zoom="out" class="tour-btn is-desktop glass" aria-label="Zoom out"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 10h10"></path></svg></button>
+          <button type="button" data-tour-zoom="in" class="tour-btn is-desktop glass" aria-label="Zoom in"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 10h10M10 5v10"></path></svg></button>
+          <button type="button" data-tour-auto class="tour-btn glass" aria-label="Auto-rotate"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16 10a6 6 0 1 1-1.8-4.3"></path><path d="M16 3.5v3h-3"></path></svg></button>
+          <button type="button" data-tour-gyro hidden class="tour-btn glass" aria-label="Look around by moving your phone"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="6" y="2.5" width="8" height="15" rx="2"></rect><path d="M2.5 7c-1 2-1 4 0 6M17.5 7c1 2 1 4 0 6"></path></svg></button>
+          <button type="button" data-tour-fs class="tour-btn glass" aria-label="Full screen"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7.5V3h4.5M17 7.5V3h-4.5M3 12.5V17h4.5M17 12.5V17h-4.5"></path></svg></button>
+        </div>
+      </div>
+
+      <!-- Hint -->
+      <div data-tour-hint class="tour-hint pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+        <span class="glass mx-auto grid size-16 place-items-center rounded-full">
+          <svg class="tour-hand size-7 text-gold-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V11m0-1.5V4a1.5 1.5 0 0 1 3 0v6m0-1a1.5 1.5 0 0 1 3 0v1m0 0a1.5 1.5 0 0 1 3 0v4.5a6.5 6.5 0 0 1-6.5 6.5h-1.6a6.5 6.5 0 0 1-5.2-2.6L4 15.5a1.6 1.6 0 0 1 2.4-2.1L8 15"></path></svg>
+        </span>
+        <span class="label mt-3 block text-pearl">Drag to look around</span>
+      </div>
+
+      <!-- Bottom: home card + rooms -->
+      <div class="pointer-events-none absolute inset-x-3 bottom-3 flex flex-col gap-3 md:inset-x-5 md:bottom-5 lg:flex-row lg:items-end lg:justify-between">
+        <div class="glass pointer-events-auto hidden max-w-xs rounded-md p-4 lg:block">
+          <p class="label text-gold">{tourHome.title} {demo && '· Sample'}</p>
+          <p class="mt-2 font-serif text-2xl leading-tight">{tourHome.area}</p>
+          <p class="mt-1 text-sm text-mist">{tourHome.beds} bd · {tourHome.baths} ba · {tourHome.sqft} sqft</p>
+          <a href="#showing" class="btn btn-solid mt-4 w-full justify-center py-3!">Book a private showing</a>
+        </div>
+        <div class="glass pointer-events-auto flex gap-2 overflow-x-auto rounded-md p-2 [scrollbar-width:none]" role="group" aria-label="Rooms">
+          {
+            rooms.map((r, i) => (
+              <button type="button" data-tour-goto={r.id} aria-current={i === 0 ? 'true' : 'false'} class="room-btn">
+                <img src={r.preview} alt="" loading="lazy" class="room-thumb" />
+                <span class="room-name">{r.name}</span>
+              </button>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+    <p class="mt-4 px-2 text-xs text-mist/80 md:px-0">
+      {tourHome.credit}. Rooms come from different demo homes; real tours use Thang’s own 360° photos of each listing.
+    </p>
+    <script type="application/json" id="tour-data" set:html={JSON.stringify(rooms)} />
+  </section>
+
+  <!-- ============================================================ HOW IT WORKS -->
+  <section id="how" class="mx-auto max-w-[1600px] px-5 py-24 md:px-10 md:py-36" aria-labelledby="how-title">
+    <div class="grid gap-12 lg:grid-cols-12">
+      <div class="lg:col-span-4">
+        <p class="label text-gold">How it works</p>
+        <h2 id="how-title" data-split class="mt-4 font-serif text-title font-light">Visit first, <em class="italic">on your screen.</em></h2>
+      </div>
+      <ol data-reveal-group class="grid gap-px overflow-hidden rounded-lg border border-pearl/10 bg-pearl/10 sm:grid-cols-3 lg:col-span-8">
+        {
+          [
+            { t: 'Every room in 360°', d: 'Each listing is captured room by room, so you can look in every direction, not just where the photographer pointed.' },
+            { t: 'Tour on any screen', d: 'On a laptop, drag to look around. On a phone, move the phone itself. Share the link with family before you decide.' },
+            { t: 'Book when it feels right', d: 'When a home earns a visit, book a private showing with Thang straight from the tour.' },
+          ].map((s, i) => (
+            <li class="bg-void-2 p-7 md:p-9">
+              <p class="font-serif text-6xl leading-none font-light text-gold">0{i + 1}</p>
+              <h3 class="mt-8 font-serif text-3xl">{s.t}</h3>
+              <p class="mt-3 text-sm leading-relaxed text-mist">{s.d}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============================================================ PRIVATE SHOWING -->
+  <section id="showing" class="relative overflow-hidden border-t border-pearl/10" aria-labelledby="showing-title">
+    <div class="pointer-events-none absolute -top-40 right-[-10%] size-[60vw] rounded-full bg-[radial-gradient(circle,rgb(214_178_110/0.14),transparent_60%)]"></div>
+    <div class="relative mx-auto grid max-w-[1600px] gap-14 px-5 py-24 md:px-10 md:py-36 lg:grid-cols-12">
+      <div class="lg:col-span-5">
+        <p class="label text-gold">Private showing</p>
+        <h2 id="showing-title" data-split class="mt-4 font-serif text-title font-light">See it <em class="italic">in person.</em></h2>
+        <p data-reveal class="mt-8 max-w-md leading-relaxed text-mist">Tell Thang which home and when suits you. Thang will confirm the time personally.</p>
+        <div data-reveal class="mt-10 space-y-2">
+          <p class="font-serif text-4xl"><a href={`tel:${tel}`} class="hover:text-gold-light">{site.phone.value}</a></p>
+          <p class="text-mist"><a href={`mailto:${site.email.value}`} class="hover:text-gold-light">{site.email.value}</a></p>
+        </div>
+      </div>
+      <form data-showing data-reveal class="glass rounded-lg p-6 md:p-10 lg:col-span-6 lg:col-start-7" novalidate>
+        <div class="grid gap-6 sm:grid-cols-2">
+          <label class="field"><span>Full name</span><input name="name" required autocomplete="name" /></label>
+          <label class="field"><span>Phone or email</span><input name="reach" required autocomplete="tel" /></label>
+          <label class="field sm:col-span-2"><span>Which home?</span><input name="home" value={`${tourHome.title} · ${tourHome.area}`} /></label>
+          <label class="field"><span>Preferred day</span>
+            <select name="day"><option>Weekday</option><option>Saturday</option><option>Sunday</option><option>Any day</option></select>
+          </label>
+          <label class="field"><span>Time</span>
+            <select name="time"><option>Morning</option><option>Afternoon</option><option>Evening</option></select>
+          </label>
+          <label class="field sm:col-span-2"><span>Anything else?</span><textarea name="note" rows="3"></textarea></label>
+        </div>
+        <button type="submit" class="btn btn-solid mt-8 w-full justify-center">Request a showing</button>
+        <p data-showing-status hidden class="mt-4 border-l-2 border-gold pl-4 text-sm text-mist" role="status"></p>
+      </form>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .backdrop {
+    --bg-a: #3b2e24;
+    --bg-b: #0c0a08;
+    background: radial-gradient(120% 95% at 50% 38%, var(--bg-a) 0%, var(--bg-b) 68%);
+  }
+  :global(.no-webgl) [data-house-fallback] {
+    display: block;
+  }
+  :global(.no-webgl) .hero,
+  :global(.reduce-motion) .hero {
+    height: 100svh;
+  }
+  :global(.no-webgl) .chapter,
+  :global(.reduce-motion) .chapter,
+  :global(.no-webgl) [data-clock-wrap] {
+    display: none;
+  }
+  .tour-btn {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 9999px;
+    color: var(--color-pearl);
+    transition: color 0.3s, background 0.3s;
+  }
+  .tour-btn.is-desktop {
+    display: none;
+  }
+  @media (min-width: 640px) {
+    .tour-btn.is-desktop {
+      display: grid;
+    }
+  }
+  .tour-btn svg {
+    width: 17px;
+    height: 17px;
+  }
+  .tour-btn:hover,
+  .tour-btn[aria-pressed='true'] {
+    color: var(--color-gold-light);
+  }
+  .tour-btn[aria-pressed='true'] {
+    background: color-mix(in oklab, var(--color-gold) 22%, transparent);
+  }
+  .tour-hd:global(.is-loading) {
+    display: flex;
+  }
+  .tour-hd:not(:global(.is-loading)) {
+    display: none;
+  }
+  .tour-spin {
+    width: 12px;
+    height: 12px;
+    border-radius: 9999px;
+    border: 1.5px solid color-mix(in oklab, var(--color-gold) 30%, transparent);
+    border-top-color: var(--color-gold);
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .tour-hint {
+    transition: opacity 0.6s;
+  }
+  .tour-hint:global(.is-gone) {
+    opacity: 0;
+  }
+  .tour-hand {
+    animation: hand 2.4s ease-in-out infinite;
+  }
+  @keyframes hand {
+    0%,
+    100% {
+      transform: translateX(-6px) rotate(-6deg);
+    }
+    50% {
+      transform: translateX(6px) rotate(6deg);
+    }
+  }
+  .tour-frame:global(.is-fullscreen) {
+    border-radius: 0;
+    height: 100vh;
+  }
+  .tour-frame:global(.is-fallback) .tour-fallback {
+    display: block;
+  }
+  .room-btn {
+    position: relative;
+    flex-shrink: 0;
+    width: 112px;
+    border-radius: 10px;
+    overflow: hidden;
+    text-align: left;
+    outline-offset: 2px;
+  }
+  .room-thumb {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    object-position: 60% 55%;
+    opacity: 0.65;
+    transition: opacity 0.4s, transform 0.8s var(--ease-out-expo);
+  }
+  .room-name {
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: 0.9rem 0.55rem 0.45rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    background: linear-gradient(to top, rgb(7 8 11 / 0.85), transparent);
+  }
+  .room-btn:hover .room-thumb {
+    opacity: 0.95;
+    transform: scale(1.06);
+  }
+  .room-btn[aria-current='true'] {
+    box-shadow: 0 0 0 1.5px var(--color-gold);
+  }
+  .room-btn[aria-current='true'] .room-thumb {
+    opacity: 1;
+  }
+  .field {
+    display: block;
+  }
+  .field > span {
+    display: block;
+    font-size: 0.6875rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--color-mist);
+  }
+  .field input,
+  .field select,
+  .field textarea {
+    margin-top: 0.5rem;
+    width: 100%;
+    border: 0;
+    border-bottom: 1px solid color-mix(in oklab, var(--color-pearl) 22%, transparent);
+    background: transparent;
+    padding: 0.5rem 0;
+    font-family: var(--font-serif);
+    font-size: 1.35rem;
+    color: var(--color-pearl);
+    outline: none;
+    transition: border-color 0.3s;
+  }
+  .field select option {
+    background: var(--color-void-2);
+  }
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    border-color: var(--color-gold);
+  }
+</style>
+
+<style is:global>
+  /* Tour hotspots (created by src/v4/tour.ts) */
+  .hs {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: translate3d(-9999px, 0, 0);
+    transition: opacity 0.35s;
+  }
+  .hs.is-hidden {
+    opacity: 0;
+    pointer-events: none !important;
+  }
+  .hs-go {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: -22px 0 0 -22px;
+  }
+  .hs-dot {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 9999px;
+    background: rgb(7 8 11 / 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgb(242 239 232 / 0.7);
+    color: #f2efe8;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s;
+  }
+  .hs-dot svg {
+    width: 16px;
+    height: 16px;
+  }
+  .hs-go:hover .hs-dot,
+  .hs-go:focus-visible .hs-dot {
+    transform: scale(1.12);
+    background: rgb(242 239 232 / 0.92);
+    color: #07080b;
+  }
+  .hs-pulse {
+    position: absolute;
+    inset: -1px;
+    border-radius: 9999px;
+    border: 1px solid #f2efe8;
+    animation: pulse-ring 2.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  }
+  .hs-label {
+    white-space: nowrap;
+    border-radius: 9999px;
+    padding: 0.5rem 0.85rem;
+    background: rgb(7 8 11 / 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #f2efe8;
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: opacity 0.4s, transform 0.4s;
+  }
+  .hs-go:hover .hs-label,
+  .hs-go:focus-visible .hs-label {
+    opacity: 1;
+    transform: none;
+  }
+  @media (hover: none) {
+    .hs-label {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .hs-info {
+    margin: -15px 0 0 -15px;
+  }
+  .hs-dot-info {
+    width: 30px;
+    height: 30px;
+    background: rgb(242 239 232 / 0.92);
+    border-color: transparent;
+    color: #07080b;
+    font: italic 600 17px/1 'Cormorant Garamond', serif;
+  }
+  .hs-card {
+    position: absolute;
+    left: 40px;
+    top: -8px;
+    width: 220px;
+    padding: 0.8rem 1rem;
+    border-radius: 12px;
+    background: rgb(7 8 11 / 0.78);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgb(242 239 232 / 0.12);
+    color: #c9ced8;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    text-align: left;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(6px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .hs-card strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    font: 500 1.2rem/1.1 'Cormorant Garamond', serif;
+    color: #e2d3b5;
+  }
+  .hs-info:hover .hs-card,
+  .hs-info:focus-visible .hs-card,
+  .hs-info.is-open .hs-card {
+    opacity: 1;
+    transform: none;
+  }
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(0.8);
+      opacity: 0.9;
+    }
+    100% {
+      transform: scale(2.2);
+      opacity: 0;
+    }
+  }
+</style>
