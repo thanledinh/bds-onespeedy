@@ -95,8 +95,9 @@ const PAGE = 12;
 
 <Layout title="Profile" description="Thang Truong — real estate agent in San Jose and the Bay Area. Sold homes, reviews, experience and a direct line to Thang.">
   <!-- ============================================================ COVER -->
-  <section class="mx-auto max-w-[1280px] pt-16 md:px-6 md:pt-20">
-    <div data-cover class="relative h-[230px] overflow-hidden bg-night sm:h-[300px] md:h-[400px] md:rounded-xl">
+  <!-- Starts below the 64px top bar with a gap, so the cover never touches the header. -->
+  <section class="mx-auto max-w-[1280px] px-3 pt-[76px] md:px-6 md:pt-20">
+    <div data-cover class="relative h-[220px] overflow-hidden rounded-lg bg-night sm:h-[300px] md:h-[400px] md:rounded-xl">
       <video data-cover-video class="absolute inset-0 size-full scale-110 object-cover" autoplay muted loop playsinline preload="auto" aria-hidden="true">
         <source media="(min-width: 900px)" src={videos.hero.hd} type="video/mp4" />
         <source src={videos.hero.sd} type="video/mp4" />
