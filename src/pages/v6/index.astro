@@ -1,0 +1,428 @@
+---
+/**
+ * C3 — "One-column profile", with a stage. The content stays one calm column,
+ * like a profile in an app. On desktop the other half is a large picture that
+ * follows the section being read (film, a sale, a video, an award…).
+ * Phones get the film on top and big images inside each section.
+ */
+import Layout from '../../v5/Layout.astro';
+import { site } from '../../config/site';
+import { profile } from '../../data/profile';
+import { photos, videos } from '../../data/media';
+import { soldHomes, soldStats } from '../../data/sold';
+import { posts, videoList, awards, career } from '../../data/content';
+import { unsplash, srcset, money, compactMoney, monthYear } from '../../lib/img';
+import { tel, DRE_LOOKUP, cityCounts, scriptData } from '../../lib/profile-data';
+
+const demo = site.mode === 'demo';
+const recent = soldHomes.slice(0, 10);
+const firstYear = soldHomes.reduce((y, h) => (h.closeDate < y ? h.closeDate : y), soldHomes[0].closeDate).slice(0, 4);
+// The stage features the top sale, so it doesn't repeat the first card of the rail next to it.
+const topSale = soldHomes.reduce((best, h) => (h.soldPrice > best.soldPrice && h.photo !== recent[0].photo ? h : best), soldHomes[1]);
+
+const stats = [
+  { v: String(soldStats.count), l: 'Homes sold' },
+  { v: compactMoney(soldStats.volume), l: 'Sales volume' },
+  { v: `+${soldStats.avgOverList}%`, l: 'Over list price' },
+];
+
+// One picture per section for the desktop stage, in page order.
+const stages = [
+  { key: 'intro', video: videos.hero.hd, poster: unsplash(photos.duskModern, 1400, 1.1), kicker: 'San Jose, California', line: 'Buying or selling in the Bay Area, with someone who knows the streets.' },
+  { key: 'sales', img: topSale.photo, kicker: `Top sale · ${monthYear(topSale.closeDate)}`, line: `${topSale.neighborhood}, ${topSale.city} · ${money(topSale.soldPrice)}` },
+  { key: 'videos', video: videos.aerial.hd, poster: unsplash(videoList[0].thumb, 1400, 1.1), kicker: 'On YouTube', line: videoList[0].title },
+  { key: 'awards', img: awards[0].photo!, kicker: `Recognition · ${awards[0].year}`, line: `${awards[0].title}, ${awards[0].issuer}` },
+  { key: 'articles', img: posts[0].cover, kicker: `Journal · ${posts[0].tag}`, line: posts[0].title },
+  { key: 'experience', img: photos.livingWarm, kicker: 'Experience', line: `Closing homes in the Bay Area since ${firstYear}` },
+  { key: 'contact', img: photos.duskPath, kicker: 'Talk to Thang', line: 'Send a message and Thang replies personally.' },
+];
+---
+
+<Layout option="c3" quietFooter title="Profile" description="Thang Truong — real estate agent in San Jose and the Bay Area. Sold homes, videos, articles and a direct line to Thang.">
+  <div class="lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+    <!-- ============================================================ STAGE (desktop) -->
+    <aside class="hidden lg:block" aria-hidden="true">
+      <div class="sticky top-0 h-svh p-3 pt-[76px]">
+        <div data-stage-root class="stage relative size-full overflow-hidden rounded-xl bg-night text-porcelain">
+          {
+            stages.map((s, i) => (
+              <div data-layer={s.key} data-kicker={s.kicker} data-line={s.line} class:list={['layer absolute inset-0', i === 0 && 'is-on']}>
+                {s.video ? (
+                  <video class="size-full object-cover" muted loop playsinline preload={i === 0 ? 'metadata' : 'none'} poster={s.poster}>
+                    <source src={s.video} type="video/mp4" />
+                  </video>
+                ) : (
+                  <img src={unsplash(s.img!, 1400, 1.1)} srcset={srcset(s.img!, 1.1, [900, 1400, 2000])} sizes="52vw" alt="" loading="lazy" class="size-full object-cover" />
+                )}
+              </div>
+            ))
+          }
+          <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-night/85 via-night/10 to-night/30"></div>
+
+          <p data-stage-index class="absolute top-6 left-6 font-display text-lg tabular-nums">01 / {String(stages.length).padStart(2, '0')}</p>
+          <div class="absolute top-7 right-6 flex w-36 gap-1.5">
+            {stages.map((_, i) => <span data-stage-bar class:list={['bar h-[2px] flex-1 rounded-full', i === 0 && 'is-on']} />)}
+          </div>
+
+          <div data-stage-caption class="caption absolute inset-x-6 bottom-16 max-w-lg xl:inset-x-8">
+            <p data-stage-kicker class="label text-porcelain/70">{stages[0].kicker}</p>
+            <p data-stage-line class="mt-3 font-display text-[clamp(1.8rem,2.6vw,2.6rem)] leading-[1.08]">{stages[0].line}</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ============================================================ THE COLUMN -->
+    <div class="px-5 pb-24 sm:px-8 lg:px-14 xl:px-20">
+      <div class="mx-auto max-w-[560px] lg:mx-0">
+        <!-- Intro -->
+        <section data-stage="intro" class="pt-[76px] lg:min-h-[92svh] lg:pt-[150px]" aria-labelledby="profile-name">
+          <div data-cover class="relative -mx-2 h-[52svh] min-h-[320px] overflow-hidden rounded-xl bg-night sm:mx-0 lg:hidden">
+            <video data-inline-video class="size-full object-cover" muted loop playsinline preload="metadata" poster={unsplash(photos.duskModern, 900, 1.2)} aria-hidden="true">
+              <source src={videos.hero.sd} type="video/mp4" />
+            </video>
+            <div class="absolute inset-0 bg-gradient-to-t from-night/70 via-transparent to-transparent"></div>
+            <p class="label absolute right-5 bottom-5 text-porcelain/80">San Jose, California</p>
+          </div>
+
+          <div data-avatar class="relative -mt-11 ml-5 grid size-[88px] place-items-center rounded-full border-4 border-card bg-night text-2xl font-bold tracking-wide text-porcelain sm:ml-6 lg:mt-0 lg:ml-0 lg:border-0">
+            {site.initials}<span class="sr-only">Portrait placeholder</span>
+          </div>
+          <p data-pre-hide data-intro class="label mt-7 text-slate">{site.role} · {site.area}</p>
+          <h1 id="profile-name" data-split class="mt-3 font-display text-[clamp(3.1rem,6.2vw,5.4rem)] leading-[0.94] font-normal tracking-[-0.025em]">{site.name.value}</h1>
+          <p data-pre-hide data-intro class="mt-6 max-w-md text-lg leading-relaxed text-ink/75">{profile.bio.value}</p>
+
+          <dl data-pre-hide data-intro class="mt-10 grid grid-cols-3 divide-x divide-ink/10 border-y border-ink/10">
+            {
+              stats.map((s, i) => (
+                <div class:list={['flex flex-col-reverse py-5', i === 0 ? 'pr-3' : 'px-3 sm:px-5']}>
+                  <dt class="mt-2 text-xs text-slate">{s.l}</dt>
+                  <dd class="font-display text-[clamp(1.9rem,3.4vw,2.7rem)] leading-none" data-count-up={s.v}>{s.v}</dd>
+                </div>
+              ))
+            }
+          </dl>
+
+          <div data-pre-hide data-intro class="mt-8 flex flex-wrap gap-2">
+            <button type="button" data-chat-open class="btn btn-primary">Message Thang</button>
+            <a href={`tel:${tel}`} class="btn btn-ghost">Call</a>
+            <button type="button" data-vcard class="btn btn-ghost">Save contact</button>
+          </div>
+          <p data-pre-hide data-intro class="mt-6 text-sm leading-relaxed text-slate">
+            Speaks {profile.languages.value.join(' and ')} · Licensed in California ·
+            <a href={DRE_LOOKUP} target="_blank" rel="noopener" class="underline decoration-ink/25 underline-offset-4 hover:decoration-ink">{site.dre.value}</a>
+          </p>
+          {demo && <p data-pre-hide data-intro class="mt-2 text-sm text-slate">Demo: photos and numbers are sample data.</p>}
+        </section>
+
+        <!-- Sales -->
+        <section data-stage="sales" class="sec" aria-labelledby="c3-sales">
+          <p class="label text-slate">Track record</p>
+          <div class="mt-3 flex items-end justify-between gap-6">
+            <h2 id="c3-sales" data-reveal class="sec-title">Recently sold</h2>
+            <div class="hidden gap-2 sm:flex">
+              <button type="button" data-rail-prev="sales" class="arrow" aria-label="Previous homes">←</button>
+              <button type="button" data-rail-next="sales" class="arrow" aria-label="Next homes">→</button>
+            </div>
+          </div>
+          <div data-rail="sales" class="rail mt-7">
+            {
+              recent.map((h) => (
+                <button type="button" data-home-tile={h.id} class="group w-[78%] shrink-0 snap-start text-left sm:w-[62%]">
+                  <span class="block aspect-[4/5] overflow-hidden rounded-lg bg-mist">
+                    <img src={unsplash(h.photo, 700, 1.25)} srcset={srcset(h.photo, 1.25, [400, 700, 1000])} sizes="(min-width: 1024px) 340px, 78vw" alt={`${h.type} in ${h.neighborhood}, ${h.city}`} loading="lazy" class="size-full object-cover transition-transform duration-1000 ease-out-expo group-hover:scale-[1.04]" />
+                  </span>
+                  <span class="mt-4 flex items-baseline justify-between gap-3">
+                    <span class="font-display text-[1.7rem] leading-none">{money(h.soldPrice)}</span>
+                    <span class="text-xs text-slate">{monthYear(h.closeDate)}</span>
+                  </span>
+                  <span class="mt-1.5 block truncate text-sm text-slate">{h.neighborhood}, {h.city} · {h.beds} bd · {h.baths} ba</span>
+                </button>
+              ))
+            }
+          </div>
+          <div class="mt-9 flex flex-wrap items-center justify-between gap-4 border-t border-ink/10 pt-6">
+            <p class="text-slate">
+              <span class="mr-2 font-display text-[2.6rem] leading-none text-ink">{soldStats.count}</span>homes sold in {soldStats.cities} cities
+            </p>
+            <button type="button" data-toggle="c3-all" aria-expanded="false" aria-controls="c3-all" class="btn btn-ghost">See every sale</button>
+          </div>
+          <div id="c3-all" data-grid="10" data-grid-step="10" class="mt-6" hidden>
+            <div class="flex items-center justify-between gap-3">
+              <label class="select">
+                <span class="sr-only">Filter by city</span>
+                <select data-grid-filter>
+                  <option value="">All cities ({soldStats.count})</option>
+                  {cityCounts.map(([c, n]) => <option value={c}>{c} ({n})</option>)}
+                </select>
+              </label>
+              <p class="text-sm text-slate"><span data-grid-count>10 of {soldStats.count}</span></p>
+            </div>
+            <ol class="mt-3">
+              {
+                soldHomes.map((h, i) => (
+                  <li data-grid-item data-city={h.city} hidden={i >= 10}>
+                    <button type="button" data-home-tile={h.id} class="group flex w-full items-center gap-4 border-b border-ink/8 py-3.5 text-left">
+                      <img src={unsplash(h.photo, 140, 1)} alt="" loading="lazy" class="size-12 shrink-0 rounded-md object-cover" />
+                      <span class="min-w-0 flex-1">
+                        <span class="block truncate font-display text-xl leading-tight">{h.neighborhood}</span>
+                        <span class="block truncate text-sm text-slate">{h.city} · {h.beds} bd · {h.baths} ba</span>
+                      </span>
+                      <span class="text-right">
+                        <span class="block font-display text-lg leading-tight">{money(h.soldPrice)}</span>
+                        <span class="block text-xs text-slate">{monthYear(h.closeDate)}</span>
+                      </span>
+                    </button>
+                  </li>
+                ))
+              }
+            </ol>
+            <button type="button" data-grid-more class="btn btn-ghost mt-6 w-full">Show more</button>
+          </div>
+        </section>
+
+        <!-- Videos -->
+        <section data-stage="videos" class="sec" aria-labelledby="c3-videos">
+          <p class="label text-slate">On YouTube</p>
+          <div class="mt-3 flex items-end justify-between gap-6">
+            <h2 id="c3-videos" data-reveal class="sec-title">Short videos</h2>
+            <a href={site.youtube.value} target="_blank" rel="noopener" class="text-sm font-semibold underline decoration-ink/25 underline-offset-4 hover:decoration-ink">Channel ↗</a>
+          </div>
+          <div data-rail="videos" class="rail mt-7">
+            {
+              videoList.map((v, i) => (
+                <a href={site.youtube.value} target="_blank" rel="noopener" class="group w-[46%] shrink-0 snap-start sm:w-[38%]">
+                  <span class="relative block aspect-[9/16] overflow-hidden rounded-lg bg-night text-porcelain">
+                    {i === 0 ? (
+                      <video class="absolute inset-0 size-full object-cover" autoplay muted loop playsinline preload="none" poster={unsplash(v.thumb, 500, 16 / 9)} aria-hidden="true">
+                        <source src={videos.hero.sd} type="video/mp4" />
+                      </video>
+                    ) : (
+                      <img src={unsplash(v.thumb, 500, 16 / 9)} alt="" loading="lazy" class="absolute inset-0 size-full object-cover transition-transform duration-1000 ease-out-expo group-hover:scale-105" />
+                    )}
+                    <span class="absolute inset-0 bg-gradient-to-t from-night/85 via-transparent to-night/20" />
+                    <span class="absolute top-2.5 left-2.5 rounded-full bg-night/55 px-2 py-0.5 text-xs font-semibold">{v.minutes}</span>
+                    <span class="absolute inset-x-3 bottom-3 text-sm leading-snug font-semibold">{v.title}</span>
+                  </span>
+                </a>
+              ))
+            }
+          </div>
+        </section>
+
+        <!-- Awards -->
+        <section data-stage="awards" class="sec" aria-labelledby="c3-awards">
+          <p class="label text-slate">Recognition</p>
+          <h2 id="c3-awards" data-reveal class="sec-title mt-3">Awards</h2>
+          <figure class="mt-7">
+            <img src={unsplash(awards[0].photo!, 1000, 0.75)} alt="" loading="lazy" class="aspect-[4/3] w-full rounded-lg object-cover" />
+            <figcaption class="mt-5 flex items-end justify-between gap-6">
+              <span class="font-display text-[3.4rem] leading-[0.85]">{awards[0].year}</span>
+              <span class="text-right">
+                <span class="block font-semibold">{awards[0].title}</span>
+                <span class="block text-sm text-slate">{awards[0].issuer}</span>
+              </span>
+            </figcaption>
+          </figure>
+          <ul class="mt-6 border-t border-ink/10">
+            {
+              awards.slice(1).map((a) => (
+                <li class="flex items-center gap-4 border-b border-ink/8 py-3.5">
+                  <span class="w-16 font-display text-2xl leading-none text-slate">{a.year}</span>
+                  <span class="min-w-0 flex-1">
+                    <span class="block text-sm font-semibold">{a.title}</span>
+                    <span class="block text-sm text-slate">{a.issuer}</span>
+                  </span>
+                  <img src={unsplash(a.photo!, 140, 1)} alt="" loading="lazy" class="size-11 shrink-0 rounded-md object-cover" />
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+
+        <!-- Articles -->
+        <section data-stage="articles" class="sec" aria-labelledby="c3-articles">
+          <p class="label text-slate">Journal</p>
+          <h2 id="c3-articles" data-reveal class="sec-title mt-3">Articles</h2>
+          <button type="button" data-post={posts[0].slug} class="group mt-7 block w-full text-left">
+            <span class="block aspect-[16/10] overflow-hidden rounded-lg bg-mist">
+              <img src={unsplash(posts[0].cover, 1000, 0.625)} alt="" loading="lazy" class="size-full object-cover transition-transform duration-1000 ease-out-expo group-hover:scale-[1.04]" />
+            </span>
+            <span class="label mt-5 block text-slate">{posts[0].tag} · {posts[0].minutes} min read</span>
+            <span class="mt-3 block font-display text-[2rem] leading-[1.08]">{posts[0].title}</span>
+            <span class="mt-3 block leading-relaxed text-slate">{posts[0].excerpt}</span>
+          </button>
+          <ul class="mt-6 border-t border-ink/10">
+            {
+              posts.slice(1).map((p) => (
+                <li>
+                  <button type="button" data-post={p.slug} class="group flex w-full items-center gap-4 border-b border-ink/8 py-3.5 text-left">
+                    <span class="min-w-0 flex-1">
+                      <span class="block text-xs text-slate">{p.tag} · {p.minutes} min read</span>
+                      <span class="mt-1 block font-display text-xl leading-snug">{p.title}</span>
+                    </span>
+                    <img src={unsplash(p.cover, 200, 0.75)} alt="" loading="lazy" class="h-14 w-[74px] shrink-0 rounded-md object-cover" />
+                  </button>
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+
+        <!-- Experience -->
+        <section data-stage="experience" class="sec" aria-labelledby="c3-experience">
+          <p class="label text-slate">Experience</p>
+          <h2 id="c3-experience" data-reveal class="sec-title mt-3">The path so far</h2>
+          <ol class="timeline mt-9">
+            {
+              career.map((m) => (
+                <li class="relative pb-9 pl-9 last:pb-0">
+                  <span class="dot" aria-hidden="true" />
+                  <span class="block font-display text-[1.7rem] leading-none">{m.year}</span>
+                  <span class="mt-2 block font-semibold">{m.title}</span>
+                  <span class="block text-sm text-slate">{m.org}</span>
+                  <span class="mt-2 block max-w-md text-sm leading-relaxed text-ink/75">{m.text}</span>
+                </li>
+              ))
+            }
+          </ol>
+          <p class="mt-9 border-t border-ink/10 pt-5 text-sm text-slate">
+            Licensed in California · {site.dre.value} · {site.brokerage.value} ·
+            <a href={DRE_LOOKUP} target="_blank" rel="noopener" class="font-semibold text-ink underline decoration-ink/25 underline-offset-4 hover:decoration-ink">Verify ↗</a>
+          </p>
+        </section>
+
+        <!-- Contact -->
+        <section data-stage="contact" class="sec" aria-labelledby="c3-contact">
+          <div class="rounded-xl bg-night p-8 text-porcelain sm:p-10">
+            <p class="label text-slate-light">Talk to Thang</p>
+            <h2 id="c3-contact" class="mt-4 font-display text-[clamp(2.4rem,4.6vw,3.5rem)] leading-[1.02] font-light">Let’s talk about <em class="italic">home.</em></h2>
+            <p class="mt-4 max-w-sm leading-relaxed text-slate-light">Buying, selling, or curious what your home is worth. Thang replies personally.</p>
+            <div class="mt-8 flex flex-wrap gap-2">
+              <button type="button" data-chat-open class="btn bg-porcelain text-night hover:bg-white">Message Thang</button>
+              <a href={`tel:${tel}`} class="btn border border-porcelain/25 hover:border-porcelain/60">Call</a>
+              <a href={`sms:${tel}`} class="btn border border-porcelain/25 hover:border-porcelain/60">Text</a>
+            </div>
+            <a href={`mailto:${site.email.value}`} class="mt-6 inline-block text-sm text-slate-light underline decoration-porcelain/25 underline-offset-4 hover:decoration-porcelain">{site.email.value}</a>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script type="application/json" id="v3-data" set:html={JSON.stringify(scriptData)} />
+</Layout>
+
+<script>
+  import '../../v6/stage';
+</script>
+
+<style>
+  .layer {
+    opacity: 0;
+    transform: scale(1.06);
+    transition:
+      opacity 1s var(--ease-out-expo),
+      transform 7s ease-out;
+  }
+  .layer:global(.is-on) {
+    opacity: 1;
+    transform: none;
+  }
+  .bar {
+    background: color-mix(in oklab, var(--color-porcelain) 25%, transparent);
+    transition: background 0.6s;
+  }
+  .bar:global(.is-on) {
+    background: var(--color-porcelain);
+  }
+  .caption {
+    transition:
+      opacity 0.25s,
+      transform 0.5s var(--ease-out-expo);
+  }
+  .caption:global(.is-swapping) {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  .sec {
+    padding-top: 6rem;
+  }
+  @media (min-width: 1024px) {
+    .sec {
+      padding-top: 8rem;
+    }
+  }
+  .sec-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.3rem, 4.2vw, 3.3rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .rail {
+    display: flex;
+    gap: 1rem;
+    margin-inline: -1.25rem;
+    padding-inline: 1.25rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 1.25rem;
+    scrollbar-width: none;
+  }
+  .rail::-webkit-scrollbar {
+    display: none;
+  }
+  @media (min-width: 640px) {
+    .rail {
+      margin-inline: 0;
+      padding-inline: 0;
+      scroll-padding-inline: 0;
+    }
+  }
+  .arrow {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 9999px;
+    border: 1px solid color-mix(in oklab, var(--color-ink) 14%, transparent);
+    font-size: 1.05rem;
+    transition: border-color 0.3s, background 0.3s;
+  }
+  .arrow:hover {
+    border-color: var(--color-ink);
+  }
+  .timeline {
+    position: relative;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    left: 7px;
+    width: 1px;
+    background: color-mix(in oklab, var(--color-ink) 15%, transparent);
+  }
+  .dot {
+    position: absolute;
+    top: 0.3rem;
+    left: 0;
+    width: 15px;
+    height: 15px;
+    border-radius: 9999px;
+    border: 1.5px solid var(--color-night);
+    background: var(--color-card);
+  }
+  .select select {
+    appearance: none;
+    border-radius: 9999px;
+    border: 1px solid color-mix(in oklab, var(--color-ink) 14%, transparent);
+    background: var(--color-card)
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%235a6476' stroke-width='1.6'%3E%3Cpath d='m3 4.5 3 3 3-3'/%3E%3C/svg%3E")
+      no-repeat right 0.9rem center / 12px;
+    padding: 0.6rem 2.4rem 0.6rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+</style>

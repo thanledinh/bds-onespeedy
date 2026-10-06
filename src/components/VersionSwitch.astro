@@ -2,14 +2,17 @@
 /** Demo-only switch between the design options. */
 import { site } from '../config/site';
 interface Props {
-  current: 'a' | 'b' | 'c';
+  current: 'a' | 'b' | 'c' | 'c2' | 'c3' | 's';
   side?: 'right' | 'left';
 }
 const { current, side = 'right' } = Astro.props;
 const options = [
-  { id: 'a', label: 'A', href: '/' },
-  { id: 'b', label: 'B', href: '/v2' },
-  { id: 'c', label: 'C', href: '/v3' },
+  { id: 'a', label: 'A', href: '/', name: 'A' },
+  { id: 'b', label: 'B', href: '/v2', name: 'B' },
+  { id: 'c', label: 'C', href: '/v3', name: 'C' },
+  { id: 'c2', label: 'C2', href: '/v5', name: 'C2, clean profile' },
+  { id: 'c3', label: 'C3', href: '/v6', name: 'C3, one-column profile' },
+  { id: 's', label: 'S', href: '/v7', name: 'S, signature' },
 ];
 ---
 
@@ -18,7 +21,7 @@ const options = [
     <nav class:list={['vswitch', side === 'left' && 'is-left']} aria-label="Design options">
       <span class="vswitch-label">Option</span>
       {options.map((o) => (
-        <a href={o.href} aria-current={current === o.id ? 'page' : undefined} aria-label={`Design option ${o.label}`}>
+        <a href={o.href} aria-current={current === o.id ? 'page' : undefined} aria-label={`Design option ${o.name}`}>
           {o.label}
         </a>
       ))}

@@ -1,0 +1,357 @@
+---
+/**
+ * C2 — "Clean profile". Option C's look, reorganised so it never feels busy:
+ * a profile card that stays put on the left, and tabs on the right that show one
+ * thing at a time. Same data, fewer pieces on screen.
+ */
+import Layout from '../../v5/Layout.astro';
+import HomeCard from '../../v5/HomeCard.astro';
+import { site } from '../../config/site';
+import { profile } from '../../data/profile';
+import { photos } from '../../data/media';
+import { soldHomes, soldStats } from '../../data/sold';
+import { posts, videoList, awards, career } from '../../data/content';
+import { unsplash, srcset, compactMoney, longDate } from '../../lib/img';
+import { tel, DRE_LOOKUP, cityCounts, scriptData, mapHomes } from '../../lib/profile-data';
+
+const demo = site.mode === 'demo';
+const PAGE = 12;
+
+const stats = [
+  { v: String(soldStats.count), l: 'Homes sold' },
+  { v: compactMoney(soldStats.volume), l: 'Sales volume' },
+  { v: `+${soldStats.avgOverList}%`, l: 'Over list price' },
+];
+
+const tabs = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'sold', label: 'Sold homes', count: soldStats.count },
+  { id: 'articles', label: 'Articles' },
+  { id: 'videos', label: 'Videos' },
+  { id: 'awards', label: 'Awards' },
+  { id: 'experience', label: 'Experience' },
+];
+---
+
+<Layout option="c2" title="Profile" description="Thang Truong — real estate agent in San Jose and the Bay Area. Sold homes, articles, videos and a direct line to Thang.">
+  <!-- ============================================================ COVER -->
+  <section class="mx-auto max-w-[1200px] px-3 pt-[76px] md:px-6 md:pt-20" aria-hidden="true">
+    <div data-cover class="h-[150px] overflow-hidden rounded-lg bg-night sm:h-[200px] md:h-[260px] md:rounded-xl">
+      <img
+        src={unsplash(photos.duskModern, 1800, 0.3)}
+        srcset={srcset(photos.duskModern, 0.3, [800, 1200, 1800, 2400])}
+        sizes="(min-width: 1200px) 1200px, 100vw"
+        alt=""
+        fetchpriority="high"
+        class="size-full object-cover"
+      />
+    </div>
+  </section>
+
+  <div class="mx-auto grid max-w-[1200px] gap-8 px-4 pb-24 md:px-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-12 lg:pb-32">
+    <!-- ============================================================ PROFILE CARD -->
+    <aside class="relative z-10 -mt-10 sm:-mt-14 lg:-mt-24" aria-labelledby="profile-name">
+      <div class="card p-6 md:p-7 lg:sticky lg:top-24">
+        <div data-avatar class="grid size-20 place-items-center rounded-full bg-night text-xl font-bold tracking-wide text-porcelain">
+          {site.initials}<span class="sr-only">Portrait placeholder</span>
+        </div>
+        <h1 id="profile-name" data-split class="mt-5 font-display text-[2.2rem] leading-[1.05] font-normal">{site.name.value}</h1>
+        <p data-pre-hide data-intro class="mt-2 text-slate">{site.role}<br />{site.area}</p>
+        <p data-pre-hide data-intro class="mt-3 text-sm text-slate">Speaks {profile.languages.value.join(' and ')}</p>
+
+        <dl data-pre-hide data-intro class="mt-6 grid grid-cols-3 border-y border-ink/8 py-4 text-center">
+          {
+            stats.map((s) => (
+              <div class="flex flex-col-reverse">
+                <dt class="mt-1 text-xs text-slate">{s.l}</dt>
+                <dd class="font-display text-2xl leading-none" data-count-up={s.v}>{s.v}</dd>
+              </div>
+            ))
+          }
+        </dl>
+
+        <div data-pre-hide data-intro class="mt-6 grid gap-2">
+          <button type="button" data-chat-open class="btn btn-primary w-full">Message Thang</button>
+          <a href={`tel:${tel}`} class="btn btn-ghost w-full">Call {site.phone.value}</a>
+        </div>
+        <div data-pre-hide data-intro class="mt-4 flex justify-center gap-5 text-sm font-semibold">
+          <button type="button" data-vcard class="link">Save contact</button>
+          <button type="button" data-share class="link">Share</button>
+          <button type="button" data-qr-open class="link">QR code</button>
+        </div>
+
+        <p data-pre-hide data-intro class="mt-6 border-t border-ink/8 pt-4 text-sm leading-relaxed text-slate">
+          Licensed in California ·
+          <a href={DRE_LOOKUP} target="_blank" rel="noopener" class="link">{site.dre.value}</a><br />
+          {site.brokerage.value}
+        </p>
+        {demo && <p data-pre-hide data-intro class="mt-3 text-sm text-slate">Demo: photos and numbers are sample data.</p>}
+      </div>
+    </aside>
+
+    <!-- ============================================================ TABS -->
+    <div class="min-w-0 lg:pt-4">
+      <div class="tabbar sticky top-16 z-30 -mx-4 px-4 md:-mx-6 md:px-6 lg:mx-0 lg:px-0">
+        <div role="tablist" aria-label="Profile sections" data-ptabs class="flex gap-1 overflow-x-auto border-b border-ink/10 [scrollbar-width:none]">
+          {
+            tabs.map((t, i) => (
+              <button
+                type="button"
+                role="tab"
+                id={`tab-${t.id}`}
+                aria-controls={`panel-${t.id}`}
+                aria-selected={i === 0 ? 'true' : 'false'}
+                tabindex={i === 0 ? 0 : -1}
+                data-ptab={t.id}
+                class="ptab"
+              >
+                {t.label}
+                {t.count && <span class="ptab-count">{t.count}</span>}
+              </button>
+            ))
+          }
+        </div>
+      </div>
+
+      <!-- Overview -->
+      <section role="tabpanel" id="panel-overview" aria-labelledby="tab-overview" tabindex="0" class="space-y-14 pt-8">
+        <div>
+          <h2 class="font-display text-[1.75rem] leading-tight">About</h2>
+          <p class="mt-3 max-w-2xl text-[1.05rem] leading-relaxed text-ink/80">{profile.bio.value}</p>
+        </div>
+
+        <div>
+          <div class="flex items-end justify-between gap-4">
+            <h2 class="font-display text-[1.75rem] leading-tight">Recent sales</h2>
+            <button type="button" data-goto-tab="sold" class="link text-sm font-semibold">See all {soldStats.count}</button>
+          </div>
+          <div class="mt-5 grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3">
+            {soldHomes.slice(0, 6).map((h) => <HomeCard home={h} />)}
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-end justify-between gap-4">
+            <h2 class="font-display text-[1.75rem] leading-tight">Latest article</h2>
+            <button type="button" data-goto-tab="articles" class="link text-sm font-semibold">All articles</button>
+          </div>
+          <button type="button" data-post={posts[0].slug} class="card group mt-5 grid w-full overflow-hidden text-left md:grid-cols-[1.1fr_1fr]">
+            <span class="block aspect-[16/10] overflow-hidden md:aspect-auto">
+              <img src={unsplash(posts[0].cover, 900, 0.62)} alt="" loading="lazy" class="size-full object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.03]" />
+            </span>
+            <span class="block p-5 md:p-7">
+              <span class="label block text-slate">{posts[0].tag} · {posts[0].minutes} min read</span>
+              <span class="mt-3 block font-display text-[1.7rem] leading-snug">{posts[0].title}</span>
+              <span class="mt-3 block text-sm leading-relaxed text-slate">{posts[0].excerpt}</span>
+            </span>
+          </button>
+        </div>
+
+        <div>
+          <div class="flex items-end justify-between gap-4">
+            <h2 class="font-display text-[1.75rem] leading-tight">Awards</h2>
+            <button type="button" data-goto-tab="awards" class="link text-sm font-semibold">See all {awards.length}</button>
+          </div>
+          <div class="mt-5 grid grid-cols-3 gap-4">
+            {
+              awards.slice(0, 3).map((a) => (
+                <figure>
+                  <img src={unsplash(a.photo!, 500, 1)} alt="" loading="lazy" class="aspect-square w-full rounded-md object-cover" />
+                  <figcaption class="mt-3">
+                    <span class="block font-display text-xl leading-none">{a.year}</span>
+                    <span class="mt-1 block truncate text-sm text-slate">{a.title}</span>
+                  </figcaption>
+                </figure>
+              ))
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- Sold homes -->
+      <section role="tabpanel" id="panel-sold" aria-labelledby="tab-sold" tabindex="0" class="pt-8" hidden>
+        <div class="card relative h-[260px] overflow-hidden md:h-[340px]">
+          <p class="label absolute inset-0 grid place-items-center text-slate">Loading map…</p>
+          <div data-map class="size-full"></div>
+        </div>
+        <div data-grid={PAGE} class="mt-8">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <p class="text-sm text-slate">Showing <span data-grid-count>{PAGE} of {soldStats.count}</span></p>
+            <label class="select">
+              <span class="sr-only">Filter by city</span>
+              <select data-grid-filter>
+                <option value="">All cities ({soldStats.count})</option>
+                {cityCounts.map(([c, n]) => <option value={c}>{c} ({n})</option>)}
+              </select>
+            </label>
+          </div>
+          <div class="mt-5 grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3">
+            {soldHomes.map((h, i) => <HomeCard home={h} gridItem hidden={i >= PAGE} />)}
+          </div>
+          <button type="button" data-grid-more class="btn btn-ghost mx-auto mt-10 flex">Show more</button>
+        </div>
+      </section>
+
+      <!-- Articles -->
+      <section role="tabpanel" id="panel-articles" aria-labelledby="tab-articles" tabindex="0" class="space-y-4 pt-8" hidden>
+        {
+          posts.map((p) => (
+            <button type="button" data-post={p.slug} class="card group grid w-full overflow-hidden text-left sm:grid-cols-[220px_minmax(0,1fr)]">
+              <span class="block aspect-[16/10] overflow-hidden sm:aspect-auto">
+                <img src={unsplash(p.cover, 600, 0.7)} alt="" loading="lazy" class="size-full object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.03]" />
+              </span>
+              <span class="block p-5 md:p-6">
+                <span class="label block text-slate">{p.tag} · {p.minutes} min read</span>
+                <span class="mt-2 block font-display text-[1.6rem] leading-snug">{p.title}</span>
+                <span class="mt-2 block text-sm leading-relaxed text-slate">{p.excerpt}</span>
+                <span class="mt-3 block text-xs text-slate">{longDate(p.date)}</span>
+              </span>
+            </button>
+          ))
+        }
+      </section>
+
+      <!-- Videos -->
+      <section role="tabpanel" id="panel-videos" aria-labelledby="tab-videos" tabindex="0" class="pt-8" hidden>
+        <div class="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3">
+          {
+            videoList.map((v) => (
+              <a href={site.youtube.value} target="_blank" rel="noopener" class="group block">
+                <span class="relative block aspect-[4/5] overflow-hidden rounded-md bg-night">
+                  <img src={unsplash(v.thumb, 600, 1.25)} alt="" loading="lazy" class="size-full object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.03]" />
+                  <span class="absolute inset-0 grid place-items-center">
+                    <span class="grid size-12 place-items-center rounded-full bg-porcelain/90 text-night transition-transform duration-500 ease-out-back group-hover:scale-110">
+                      <svg class="ml-0.5 size-4" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z" /></svg>
+                    </span>
+                  </span>
+                  <span class="absolute right-2 bottom-2 rounded-full bg-night/60 px-2 py-0.5 text-xs font-bold text-porcelain">{v.minutes}</span>
+                </span>
+                <span class="mt-3 block text-sm leading-snug font-semibold">{v.title}</span>
+              </a>
+            ))
+          }
+        </div>
+        <a href={site.youtube.value} target="_blank" rel="noopener" class="btn btn-ghost mx-auto mt-10 flex w-max">Open the YouTube channel ↗</a>
+      </section>
+
+      <!-- Awards -->
+      <section role="tabpanel" id="panel-awards" aria-labelledby="tab-awards" tabindex="0" class="pt-8" hidden>
+        <div class="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3">
+          {
+            awards.map((a) => (
+              <figure>
+                <img src={unsplash(a.photo!, 600, 0.75)} alt="" loading="lazy" class="aspect-[4/3] w-full rounded-md object-cover" />
+                <figcaption class="mt-3">
+                  <span class="flex items-baseline justify-between gap-3">
+                    <span class="text-sm font-semibold">{a.title}</span>
+                    <span class="font-display text-xl leading-none">{a.year}</span>
+                  </span>
+                  <span class="mt-1 block text-sm text-slate">{a.issuer}</span>
+                </figcaption>
+              </figure>
+            ))
+          }
+        </div>
+      </section>
+
+      <!-- Experience -->
+      <section role="tabpanel" id="panel-experience" aria-labelledby="tab-experience" tabindex="0" class="pt-8" hidden>
+        <ol class="card divide-y divide-ink/8 px-6">
+          {
+            career.map((m) => (
+              <li class="grid gap-1 py-5 sm:grid-cols-[84px_minmax(0,1fr)] sm:gap-6">
+                <span class="font-display text-xl text-slate">{m.year}</span>
+                <div>
+                  <p class="font-bold">{m.title}</p>
+                  <p class="text-sm text-slate">{m.org}</p>
+                  <p class="mt-2 max-w-xl text-sm leading-relaxed text-ink/75">{m.text}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+        <div class="mt-4 grid gap-4 md:grid-cols-2">
+          <div class="card p-6">
+            <h3 class="font-display text-xl">License</h3>
+            <p class="mt-2 text-sm leading-relaxed text-slate">
+              Real Estate Salesperson, California Department of Real Estate. Issued {profile.licenseIssued.value}.
+            </p>
+            <a href={DRE_LOOKUP} target="_blank" rel="noopener" class="link mt-3 inline-block text-sm font-semibold">Verify {site.dre.value} ↗</a>
+          </div>
+          <div class="card p-6">
+            <h3 class="font-display text-xl">Focus</h3>
+            <p class="mt-2 text-sm leading-relaxed text-slate">{profile.specialties.value.join(', ')}.</p>
+            <p class="mt-3 text-sm leading-relaxed text-slate">Sales in {cityCounts.map(([c]) => c).join(', ')}.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script type="application/json" id="v3-data" set:html={JSON.stringify(scriptData)} />
+  <script type="application/json" id="homes-data" set:html={JSON.stringify(mapHomes)} />
+</Layout>
+
+<style>
+  .tabbar {
+    background: color-mix(in oklab, var(--color-porcelain) 92%, transparent);
+    backdrop-filter: blur(14px) saturate(1.2);
+    -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  }
+  .ptab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 1rem 0.85rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--color-slate);
+    white-space: nowrap;
+    transition: color 0.3s;
+  }
+  .ptab:hover,
+  .ptab[aria-selected='true'] {
+    color: var(--color-ink);
+  }
+  .ptab::after {
+    content: '';
+    position: absolute;
+    left: 0.85rem;
+    right: 0.85rem;
+    bottom: -1px;
+    height: 2px;
+    background: var(--color-night);
+    transform: scaleX(0);
+    transition: transform 0.45s var(--ease-out-expo);
+  }
+  .ptab[aria-selected='true']::after {
+    transform: scaleX(1);
+  }
+  .ptab-count {
+    border-radius: 9999px;
+    background: var(--color-mist);
+    padding: 0.1rem 0.45rem;
+    font-size: 0.7rem;
+  }
+  .link {
+    text-decoration: underline;
+    text-decoration-color: color-mix(in oklab, currentColor 30%, transparent);
+    text-underline-offset: 4px;
+    transition: text-decoration-color 0.3s;
+  }
+  .link:hover {
+    text-decoration-color: currentColor;
+  }
+  .select select {
+    appearance: none;
+    border-radius: 9999px;
+    border: 1px solid color-mix(in oklab, var(--color-ink) 14%, transparent);
+    background: var(--color-card)
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%235a6476' stroke-width='1.6'%3E%3Cpath d='m3 4.5 3 3 3-3'/%3E%3C/svg%3E")
+      no-repeat right 0.9rem center / 12px;
+    padding: 0.6rem 2.4rem 0.6rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+</style>

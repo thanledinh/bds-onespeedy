@@ -1,0 +1,340 @@
+---
+/**
+ * Signature — the best piece of each option, one idea per section:
+ * A's cinematic film, C's profile card, B's map and sales index,
+ * D's 360° tour, then about, awards, videos and the journal.
+ */
+import Layout from '../../v7/Layout.astro';
+import { site } from '../../config/site';
+import { profile } from '../../data/profile';
+import { photos, videos } from '../../data/media';
+import { soldHomes, soldStats } from '../../data/sold';
+import { posts, videoList, awards, career } from '../../data/content';
+import { rooms, tourHome } from '../../data/tour';
+import { unsplash, srcset, money, compactMoney, monthYear, longDate } from '../../lib/img';
+import { tel, DRE_LOOKUP, cityCounts, scriptData, mapHomes } from '../../lib/profile-data';
+
+const demo = site.mode === 'demo';
+const LIST = 8;
+
+const stats = [
+  { v: String(soldStats.count), l: 'Homes sold' },
+  { v: compactMoney(soldStats.volume), l: 'Sales volume' },
+  { v: `+${soldStats.avgOverList}%`, l: 'Average over list' },
+];
+---
+
+<Layout title="Signature" description="Thang Truong — real estate agent in San Jose and the Bay Area. Every sale on the map, 360° home tours and a direct line to Thang.">
+  <!-- ============================================================ FILM (A) -->
+  <section class="relative h-svh min-h-[600px] overflow-hidden bg-night text-porcelain" aria-labelledby="hero-title">
+    <div data-cover class="absolute inset-0">
+      <video
+        data-cover-video
+        class="absolute inset-0 size-full scale-110 object-cover"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="auto"
+        poster={unsplash(photos.duskModern, 1600, 0.56)}
+        aria-hidden="true"
+      >
+        <source media="(min-width: 900px)" src={videos.hero.hd} type="video/mp4" />
+        <source src={videos.hero.sd} type="video/mp4" />
+      </video>
+      <div class="absolute inset-0 bg-gradient-to-t from-night via-night/40 to-night/50"></div>
+    </div>
+    <div class="relative mx-auto flex h-full max-w-[1400px] flex-col justify-end px-5 pb-40 md:px-10 md:pb-48">
+      <p data-pre-hide data-intro class="label text-porcelain/75">{site.role} · {site.area}</p>
+      <h1 id="hero-title" data-pre-hide data-intro class="mt-5 max-w-[13ch] font-display text-hero font-light">San Jose homes, <em class="italic">handled personally.</em></h1>
+    </div>
+  </section>
+
+  <!-- ============================================================ PROFILE CARD (C) -->
+  <section class="relative z-10 mx-auto -mt-28 max-w-[1400px] px-3 md:-mt-32 md:px-10" aria-labelledby="profile-name">
+    <div class="card grid gap-6 p-6 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center md:gap-10 md:p-9">
+      <div data-avatar class="grid size-20 place-items-center rounded-full bg-night font-display text-3xl text-porcelain md:size-28 md:text-4xl">
+        {site.initials}<span class="sr-only">Portrait placeholder</span>
+      </div>
+      <div class="min-w-0">
+        <h2 id="profile-name" data-split class="font-display text-name font-normal">{site.name.value}</h2>
+        <p data-pre-hide data-intro class="mt-3 text-slate">
+          Licensed in California ·
+          <a href={DRE_LOOKUP} target="_blank" rel="noopener" class="underline decoration-ink/25 underline-offset-4 hover:decoration-ink">{site.dre.value}</a>
+          · {site.brokerage.value}
+        </p>
+        <dl data-pre-hide data-intro class="mt-6 grid max-w-xl grid-cols-3 gap-4 border-t border-ink/10 pt-5">
+          {
+            stats.map((s) => (
+              <div class="flex flex-col-reverse">
+                <dt class="mt-1.5 text-xs text-slate">{s.l}</dt>
+                <dd class="font-display text-stat" data-count-up={s.v}>{s.v}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+      <div data-pre-hide data-intro class="grid gap-2 sm:grid-cols-3 md:grid-cols-1">
+        <button type="button" data-chat-open class="btn btn-primary">Message Thang</button>
+        <a href={`tel:${tel}`} class="btn btn-ghost">Call {site.phone.value}</a>
+        <button type="button" data-vcard class="btn btn-ghost">Save contact</button>
+      </div>
+    </div>
+    {demo && <p class="mt-3 px-3 text-sm text-slate md:px-0">Demo: photos, numbers and the tour are sample content.</p>}
+  </section>
+
+  <!-- ============================================================ SALES (B) -->
+  <section id="sales" class="mx-auto max-w-[1400px] scroll-mt-24 px-5 pt-28 md:px-10 md:pt-40" aria-labelledby="sales-title">
+    <div class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+      <div>
+        <p class="label text-gold-deep">Track record</p>
+        <h2 id="sales-title" data-reveal class="mt-4 font-display text-title font-light">Every home, <em class="italic">on the map.</em></h2>
+      </div>
+      <p class="max-w-sm leading-relaxed text-slate">
+        {soldStats.count} closings across {soldStats.cities} Bay Area cities, each with its list price, sold price and close date.
+      </p>
+    </div>
+
+    <div class="mt-12 grid gap-8 lg:grid-cols-12 lg:gap-10">
+      <div class="lg:col-span-7">
+        <div class="relative h-[340px] overflow-hidden rounded-lg bg-mist md:h-[520px] lg:sticky lg:top-24">
+          <p class="label absolute inset-0 grid place-items-center text-slate">Loading map…</p>
+          <div data-sig-map class="size-full"></div>
+        </div>
+      </div>
+
+      <div data-grid={LIST} data-grid-step={LIST} class="lg:col-span-5">
+        <div class="flex items-center justify-between gap-4 border-b border-ink/15 pb-4">
+          <label class="select">
+            <span class="sr-only">Filter by city</span>
+            <select data-grid-filter>
+              <option value="">All cities ({soldStats.count})</option>
+              {cityCounts.map(([c, n]) => <option value={c}>{c} ({n})</option>)}
+            </select>
+          </label>
+          <p class="text-sm text-slate"><span data-grid-count>{LIST} of {soldStats.count}</span></p>
+        </div>
+        <ol>
+          {
+            soldHomes.map((h, i) => (
+              <li data-sale data-grid-item data-city={h.city} data-id={h.id} hidden={i >= LIST}>
+                <button
+                  type="button"
+                  data-home-tile={h.id}
+                  class="group grid w-full grid-cols-[56px_minmax(0,1fr)_auto] items-center gap-4 border-b border-ink/10 py-4 text-left md:grid-cols-[68px_minmax(0,1fr)_auto]"
+                >
+                  <img src={unsplash(h.photo, 160, 1)} alt="" loading="lazy" class="size-14 rounded-sm object-cover md:size-[68px]" />
+                  <span class="min-w-0">
+                    <span class="block truncate font-display text-2xl leading-tight transition-colors group-hover:text-gold-deep">{h.neighborhood}</span>
+                    <span class="mt-0.5 block truncate text-sm text-slate">
+                      {h.city} · {h.beds} bd · {h.baths} ba · {h.sqft.toLocaleString('en-US')} sqft
+                    </span>
+                  </span>
+                  <span class="text-right">
+                    <span class="block font-display text-xl leading-tight">{money(h.soldPrice)}</span>
+                    <span class="mt-0.5 block text-xs text-slate">{monthYear(h.closeDate)}</span>
+                  </span>
+                </button>
+              </li>
+            ))
+          }
+        </ol>
+        <button type="button" data-grid-more class="btn btn-ghost mt-8 w-full">Show more</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 360° TOUR (D) -->
+  <section id="tour" class="mt-28 scroll-mt-16 bg-night pt-24 pb-24 text-porcelain md:mt-40 md:pt-36 md:pb-32" aria-labelledby="tour-title">
+    <div class="mx-auto max-w-[1400px] px-3 md:px-10">
+      <div class="flex flex-col gap-6 px-2 md:flex-row md:items-end md:justify-between md:px-0">
+        <div>
+          <p class="label text-gold">360° tour {demo && '· Sample'}</p>
+          <h2 id="tour-title" data-reveal class="mt-4 font-display text-title font-light">Walk through <em class="italic">before you visit.</em></h2>
+        </div>
+        <p class="max-w-sm leading-relaxed text-slate-light">Drag to look around. Tap the arrows to move between rooms, or the <span class="font-display italic text-porcelain">i</span> for details.</p>
+      </div>
+
+      <div data-tour tabindex="0" aria-label="360 degree tour. Drag or use the arrow keys to look around." class="tour-frame relative mt-10 h-[70svh] min-h-[460px] overflow-hidden rounded-lg bg-night-2 md:h-[78svh]">
+        <div data-tour-stage class="absolute inset-0">
+          <div data-tour-hotspots class="pointer-events-none absolute inset-0 [&>*]:pointer-events-auto"></div>
+        </div>
+        <div data-tour-fade class="pointer-events-none absolute inset-0 bg-night opacity-0"></div>
+        <img data-tour-fallback src={rooms[0].preview} alt={`${rooms[0].name}, 360° panorama`} class="tour-fallback absolute inset-0 size-full object-cover" />
+
+        <div class="pointer-events-none absolute inset-x-3 top-3 flex items-start justify-between gap-3 md:inset-x-5 md:top-5">
+          <div class="glass pointer-events-auto rounded-full py-2 pr-4 pl-2">
+            <span class="flex items-center gap-3">
+              <span class="rounded-full bg-porcelain/12 px-2.5 py-1 font-display text-sm whitespace-nowrap" data-tour-index>01 / {String(rooms.length).padStart(2, '0')}</span>
+              <span class="font-display text-xl leading-none whitespace-nowrap" data-tour-room>{rooms[0].name}</span>
+            </span>
+          </div>
+          <div class="pointer-events-auto flex gap-1.5">
+            <span data-tour-hd class="tour-hd glass items-center gap-2 rounded-full px-3 text-xs text-slate-light"><span class="tour-spin"></span>HD</span>
+            <button type="button" data-tour-zoom="out" class="tour-btn is-desktop glass" aria-label="Zoom out"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 10h10"></path></svg></button>
+            <button type="button" data-tour-zoom="in" class="tour-btn is-desktop glass" aria-label="Zoom in"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 10h10M10 5v10"></path></svg></button>
+            <button type="button" data-tour-auto class="tour-btn glass" aria-label="Auto-rotate"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16 10a6 6 0 1 1-1.8-4.3"></path><path d="M16 3.5v3h-3"></path></svg></button>
+            <button type="button" data-tour-gyro hidden class="tour-btn glass" aria-label="Look around by moving your phone"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="6" y="2.5" width="8" height="15" rx="2"></rect><path d="M2.5 7c-1 2-1 4 0 6M17.5 7c1 2 1 4 0 6"></path></svg></button>
+            <button type="button" data-tour-fs class="tour-btn glass" aria-label="Full screen"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7.5V3h4.5M17 7.5V3h-4.5M3 12.5V17h4.5M17 12.5V17h-4.5"></path></svg></button>
+          </div>
+        </div>
+
+        <div data-tour-hint class="tour-hint pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+          <span class="glass mx-auto grid size-16 place-items-center rounded-full">
+            <svg class="tour-hand size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V11m0-1.5V4a1.5 1.5 0 0 1 3 0v6m0-1a1.5 1.5 0 0 1 3 0v1m0 0a1.5 1.5 0 0 1 3 0v4.5a6.5 6.5 0 0 1-6.5 6.5h-1.6a6.5 6.5 0 0 1-5.2-2.6L4 15.5a1.6 1.6 0 0 1 2.4-2.1L8 15"></path></svg>
+          </span>
+          <span class="label mt-3 block">Drag to look around</span>
+        </div>
+
+        <div class="pointer-events-none absolute inset-x-3 bottom-3 flex flex-col gap-3 md:inset-x-5 md:bottom-5 lg:flex-row lg:items-end lg:justify-between">
+          <div class="glass pointer-events-auto hidden max-w-xs rounded-md p-4 lg:block">
+            <p class="label text-slate-light">{tourHome.title}</p>
+            <p class="mt-2 font-display text-2xl leading-tight">{tourHome.area}</p>
+            <p class="mt-1 text-sm text-slate-light">{tourHome.beds} bd · {tourHome.baths} ba · {tourHome.sqft} sqft</p>
+            <button type="button" data-chat-open data-chat-intent="Buy a home" class="btn btn-light mt-4 w-full">Book a private showing</button>
+          </div>
+          <div class="glass pointer-events-auto flex gap-2 overflow-x-auto rounded-md p-2 [scrollbar-width:none]" role="group" aria-label="Rooms">
+            {
+              rooms.map((r, i) => (
+                <button type="button" data-tour-goto={r.id} aria-current={i === 0 ? 'true' : 'false'} class="room-btn">
+                  <img src={r.preview} alt="" loading="lazy" class="room-thumb" />
+                  <span class="room-name">{r.name}</span>
+                </button>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+      <p class="mt-4 px-2 text-sm text-slate-light md:px-0">{tourHome.credit}. Rooms come from different demo homes; real tours use Thang’s own 360° photos.</p>
+    </div>
+    <script type="application/json" id="tour-data" set:html={JSON.stringify(rooms)} />
+  </section>
+
+  <!-- ============================================================ ABOUT + AWARDS (C, B) -->
+  <section id="about" class="mx-auto max-w-[1400px] scroll-mt-24 px-5 py-28 md:px-10 md:py-40" aria-labelledby="about-title">
+    <div class="grid gap-14 lg:grid-cols-12 lg:gap-10">
+      <div class="lg:col-span-5">
+        <p class="label text-gold-deep">About</p>
+        <h2 id="about-title" data-reveal class="mt-4 font-display text-title font-light">Local, direct, <em class="italic">on your side.</em></h2>
+        <p class="mt-7 max-w-md text-lg leading-relaxed text-ink/75">{profile.bio.value}</p>
+        <p class="mt-6 text-sm text-slate">Speaks {profile.languages.value.join(' and ')}.</p>
+      </div>
+      <ol class="lg:col-span-6 lg:col-start-7">
+        {
+          career.map((m) => (
+            <li class="grid grid-cols-[72px_minmax(0,1fr)] gap-5 border-t border-ink/12 py-6 md:grid-cols-[96px_minmax(0,1fr)]">
+              <span class="font-display text-2xl text-slate">{m.year}</span>
+              <span>
+                <span class="block font-semibold">{m.title}</span>
+                <span class="block text-sm text-slate">{m.org}</span>
+                <span class="mt-2 block max-w-lg text-sm leading-relaxed text-ink/70">{m.text}</span>
+              </span>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+
+    <div class="mt-24 md:mt-32">
+      <div class="flex items-end justify-between gap-6 border-b border-ink/15 pb-4">
+        <h3 class="font-display text-4xl font-light md:text-5xl">Recognition</h3>
+        <p class="text-sm text-slate">{awards.length} awards</p>
+      </div>
+      <ul class="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-6">
+        {
+          awards.map((a) => (
+            <li>
+              <img src={unsplash(a.photo!, 500, 1.25)} alt="" loading="lazy" class="aspect-[4/5] w-full rounded-md object-cover" />
+              <p class="mt-3 flex items-baseline justify-between gap-2">
+                <span class="text-sm font-semibold">{a.title}</span>
+                <span class="font-display text-xl leading-none">{a.year}</span>
+              </p>
+              <p class="mt-1 text-sm text-slate">{a.issuer}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================================ VIDEOS (A) -->
+  <section class="bg-night py-28 text-porcelain md:py-40" aria-labelledby="videos-title">
+    <div class="mx-auto max-w-[1400px] px-5 md:px-10">
+      <div class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p class="label text-gold">On YouTube</p>
+          <h2 id="videos-title" data-reveal class="mt-4 font-display text-title font-light">Short videos, <em class="italic">straight answers.</em></h2>
+        </div>
+        <a href={site.youtube.value} target="_blank" rel="noopener" class="btn btn-line self-start md:self-auto">Open the channel ↗</a>
+      </div>
+      <ul class="mt-14 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+        {
+          videoList.slice(0, 4).map((v, i) => (
+            <li class:list={[i % 2 === 1 && 'md:mt-16']}>
+              <a href={site.youtube.value} target="_blank" rel="noopener" class="group block">
+                <span class="relative block aspect-[9/16] overflow-hidden rounded-md bg-night-2">
+                  {i === 0 ? (
+                    <video class="absolute inset-0 size-full object-cover" autoplay muted loop playsinline preload="none" poster={unsplash(v.thumb, 700, 16 / 9)} aria-hidden="true">
+                      <source src={videos.aerial.sd} type="video/mp4" />
+                    </video>
+                  ) : (
+                    <img src={unsplash(v.thumb, 700, 16 / 9)} alt="" loading="lazy" class="absolute inset-0 size-full object-cover opacity-85 transition duration-1000 ease-out-expo group-hover:scale-105 group-hover:opacity-100" />
+                  )}
+                  <span class="absolute inset-0 bg-gradient-to-t from-night/85 via-transparent to-night/20" />
+                  <span class="absolute top-3 left-3 rounded-full bg-night/50 px-2.5 py-1 text-xs font-semibold backdrop-blur">{v.minutes}</span>
+                  <span class="absolute inset-x-4 bottom-4 text-base leading-snug font-semibold">{v.title}</span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================================ JOURNAL (B) -->
+  <section id="journal" class="mx-auto max-w-[1400px] scroll-mt-24 px-5 py-28 md:px-10 md:py-40" aria-labelledby="journal-title">
+    <p class="label text-gold-deep">Journal</p>
+    <h2 id="journal-title" data-reveal class="mt-4 max-w-3xl font-display text-title font-light">Notes on buying, selling <em class="italic">and the market.</em></h2>
+    <ul class="mt-14 grid gap-x-6 gap-y-14 md:grid-cols-3">
+      {
+        posts.slice(0, 3).map((p) => (
+          <li>
+            <button type="button" data-post={p.slug} class="group block w-full text-left">
+              <span class="block aspect-[4/3] overflow-hidden rounded-md bg-mist">
+                <img
+                  src={unsplash(p.cover, 900, 0.75)}
+                  srcset={srcset(p.cover, 0.75, [480, 768, 1100])}
+                  sizes="(min-width: 768px) 32vw, 92vw"
+                  alt=""
+                  loading="lazy"
+                  class="size-full object-cover transition-transform duration-1000 ease-out-expo group-hover:scale-[1.04]"
+                />
+              </span>
+              <span class="label mt-5 block text-slate"><span class="text-gold-deep">{p.tag}</span> · {longDate(p.date)}</span>
+              <span class="mt-3 block font-display text-3xl leading-[1.05] decoration-1 underline-offset-4 group-hover:underline">{p.title}</span>
+              <span class="mt-3 block text-sm leading-relaxed text-slate">{p.excerpt}</span>
+            </button>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <script type="application/json" id="v3-data" set:html={JSON.stringify(scriptData)} />
+  <script type="application/json" id="sig-homes" set:html={JSON.stringify(mapHomes)} />
+</Layout>
+
+<style>
+  .select select {
+    appearance: none;
+    border-radius: 9999px;
+    border: 1px solid color-mix(in oklab, var(--color-ink) 16%, transparent);
+    background: transparent
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%2369655d' stroke-width='1.6'%3E%3Cpath d='m3 4.5 3 3 3-3'/%3E%3C/svg%3E")
+      no-repeat right 0.9rem center / 12px;
+    padding: 0.6rem 2.4rem 0.6rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+</style>
